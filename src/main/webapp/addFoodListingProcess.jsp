@@ -2,8 +2,6 @@
 <%@ page import="com.net.bean.FoodListingBean" %>
 <%@ page import="com.net.DAO.FoodListingDAO" %>
 <%@ page import="java.util.*" %>
-<%@ page import="java.io.*" %>
-<%@ page import="java.nio.file.*" %>
 
 <%
 // Check if user is logged in and is a donor
@@ -27,14 +25,21 @@ String pickupCity = request.getParameter("pickupCity");
 String pickupState = request.getParameter("pickupState");
 String pickupZipCode = request.getParameter("pickupZipCode");
 String pickupInstructions = request.getParameter("pickupInstructions");
+String status = request.getParameter("status");
 String storageCondition = request.getParameter("storageCondition");
 String allergenInfo = request.getParameter("allergenInfo");
 String specialNotes = request.getParameter("specialNotes");
 
 // Validate required fields
-if (foodName == null || quantity == null || quantityUnit == null || foodType == null || 
-    expiryDate == null || pickupAddress == null || pickupCity == null || 
-    pickupState == null || pickupZipCode == null) {
+if (foodName == null || foodName.trim().isEmpty() ||
+    quantity == null || quantity.trim().isEmpty() ||
+    quantityUnit == null || quantityUnit.trim().isEmpty() ||
+    foodType == null || foodType.trim().isEmpty() ||
+    expiryDate == null || expiryDate.trim().isEmpty() ||
+    pickupAddress == null || pickupAddress.trim().isEmpty() ||
+    pickupCity == null || pickupCity.trim().isEmpty() ||
+    pickupState == null || pickupState.trim().isEmpty() ||
+    pickupZipCode == null || pickupZipCode.trim().isEmpty()) {
     response.sendRedirect("addFoodListing.jsp?error=missing_fields");
     return;
 }
@@ -52,39 +57,6 @@ try {
     return;
 }
 
-// Handle image upload
-String imageUrl = "";
-Part filePart = request.getPart("foodImage");
-if (filePart != null && filePart.getSize() > 0) {
-    try {
-        // Create uploads directory if it doesn't exist
-        String uploadPath = getServletContext().getRealPath("/uploads");
-        File uploadDir = new File(uploadPath);
-        if (!uploadDir.exists()) {
-            uploadDir.mkdirs();
-        }
-        
-        // Generate unique filename
-        String fileName = System.currentTimeMillis() + "_" + filePart.getSubmittedFileName();
-        String filePath = uploadPath + File.separator + fileName;
-        
-        // Save file
-        try (InputStream input = filePart.getInputStream();
-             OutputStream output = new FileOutputStream(filePath)) {
-            byte[] buffer = new byte[1024];
-            int length;
-            while ((length = input.read(buffer)) > 0) {
-                output.write(buffer, 0, length);
-            }
-        }
-        
-        imageUrl = "uploads/" + fileName;
-    } catch (Exception e) {
-        // Log error but continue without image
-        System.err.println("Error uploading image: " + e.getMessage());
-    }
-}
-
 // Create FoodListingBean
 FoodListingBean foodListing = new FoodListingBean();
 foodListing.setDonorId(Integer.parseInt(userId));
@@ -99,18 +71,19 @@ foodListing.setPickupCity(pickupCity.trim());
 foodListing.setPickupState(pickupState.trim());
 foodListing.setPickupZipCode(pickupZipCode.trim());
 foodListing.setPickupInstructions(pickupInstructions != null ? pickupInstructions.trim() : "");
-foodListing.setStatus("available");
-foodListing.setImageUrl(imageUrl);
+foodListing.setStatus(status != null && !status.isEmpty() ? status.trim().toLowerCase() : "available");
+foodListing.setImageUrl(""); // No image upload in JSP
 foodListing.setActive(true);
+foodListing.setStorageCondition(storageCondition != null ? storageCondition.trim() : "");
+foodListing.setAllergenInfo(allergenInfo != null ? allergenInfo.trim() : "");
+foodListing.setSpecialNotes(specialNotes != null ? specialNotes.trim() : "");
 
 // Attempt to create food listing
 int listingStatus = FoodListingDAO.createFoodListing(foodListing);
 
 if (listingStatus > 0) {
-    // Food listing created successfully
     response.sendRedirect("donorDashboard.jsp?success=listing_created");
 } else {
-    // Food listing creation failed
     response.sendRedirect("addFoodListing.jsp?error=creation_failed");
 }
 %>

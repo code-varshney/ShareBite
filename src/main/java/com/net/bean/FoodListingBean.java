@@ -21,6 +21,9 @@ public class FoodListingBean {
     private Timestamp createdAt;
     private Timestamp updatedAt;
     private boolean isActive;
+    private String storageCondition;
+    private String allergenInfo;
+    private String specialNotes;
 
     // Default constructor
     public FoodListingBean() {}
@@ -189,5 +192,29 @@ public class FoodListingBean {
 
     public void setActive(boolean active) {
         isActive = active;
+    }
+
+    public String getStorageCondition() {
+        return storageCondition;
+    }
+
+    public void setStorageCondition(String storageCondition) {
+        this.storageCondition = storageCondition;
+    }
+
+    public String getAllergenInfo() {
+        return allergenInfo;
+    }
+
+    public void setAllergenInfo(String allergenInfo) {
+        this.allergenInfo = allergenInfo;
+    }
+
+    public String getSpecialNotes() {
+        return specialNotes;
+    }
+
+    public void setSpecialNotes(String specialNotes) {
+        this.specialNotes = specialNotes;
     }
 }

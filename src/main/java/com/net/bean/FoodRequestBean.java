@@ -14,6 +14,7 @@ public class FoodRequestBean {
     private Timestamp createdAt;
     private Timestamp updatedAt;
     private boolean isActive;
+    private String ngoName;
 
     // Default constructor
     public FoodRequestBean() {}
@@ -117,5 +118,13 @@ public class FoodRequestBean {
 
     public void setActive(boolean active) {
         isActive = active;
+    }
+
+    public String getNgoName() {
+        return ngoName;
+    }
+
+    public void setNgoName(String ngoName) {
+        this.ngoName = ngoName;
     }
 }

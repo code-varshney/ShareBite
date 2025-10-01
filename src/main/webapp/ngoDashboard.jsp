@@ -298,6 +298,37 @@ NGODetailsBean ngoDetails = NGODetailsDAO.getNGODetailsByUserId(ngoId);
                             <p class="text-muted">No food items available at the moment.</p>
                         </div>
                     <% } %>
+
+                    <!-- Available Food Listings Table -->
+                    <h2 class="mt-4 mb-3">Available Food Listings</h2>
+                    <table class="table table-bordered table-striped">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Food Name</th>
+                                <th>Type</th>
+                                <th>Quantity</th>
+                                <th>Expiry Date</th>
+                                <th>Pickup Address</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% if (availableFood != null && !availableFood.isEmpty()) {
+                                for (FoodListingBean food : availableFood) { %>
+                                    <tr>
+                                        <td><%= food.getFoodName() %></td>
+                                        <td><%= food.getFoodType() %></td>
+                                        <td><%= food.getQuantity() %> <%= food.getQuantityUnit() %></td>
+                                        <td><%= food.getExpiryDate() %></td>
+                                        <td><%= food.getPickupAddress() %>, <%= food.getPickupCity() %>, <%= food.getPickupState() %>, <%= food.getPickupZipCode() %></td>
+                                        <td><%= food.getDescription() %></td>
+                                    </tr>
+                            <%   }
+                               } else { %>
+                                <tr><td colspan="6" class="text-center">No food listings available at the moment.</td></tr>
+                            <% } %>
+                        </tbody>
+                    </table>
                 </div>
 
                 <!-- Browse Food Section -->
@@ -524,6 +555,15 @@ NGODetailsBean ngoDetails = NGODetailsDAO.getNGODetailsByUserId(ngoId);
             </div>
         </div>
     </div>
+
+    <!-- DEBUG: Food Listings Info -->
+    <% 
+        out.println("<div style='color:red;'>DEBUG: availableFood size = " + (availableFood != null ? availableFood.size() : "null") + "</div>");
+        if (availableFood != null && !availableFood.isEmpty()) {
+            FoodListingBean debugFood = availableFood.get(0);
+            out.println("<div style='color:red;'>DEBUG: First food name = " + debugFood.getFoodName() + ", Status = " + debugFood.getStatus() + ", isActive = " + debugFood.isActive() + "</div>");
+        }
+    %>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>

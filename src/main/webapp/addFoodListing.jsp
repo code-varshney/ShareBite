@@ -175,7 +175,7 @@ if (userType == null || !"donor".equals(userType) || userId == null) {
                 <% } %>
             </div>
             
-            <form action="addFoodListingProcess.jsp" method="post" enctype="multipart/form-data" id="foodListingForm">
+            <form action="addFoodListingProcess.jsp" method="post" id="foodListingForm">
                 
                 <!-- Basic Food Information -->
                 <div class="form-section">

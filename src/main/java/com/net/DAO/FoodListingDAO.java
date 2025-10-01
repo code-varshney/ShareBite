@@ -21,7 +21,7 @@ public class FoodListingDAO {
             Class.forName(dclass);
             con = DriverManager.getConnection(url, username, password);
             
-            String sql = "INSERT INTO food_listings(donorId, foodName, description, quantity, quantityUnit, foodType, expiryDate, pickupAddress, pickupCity, pickupState, pickupZipCode, pickupInstructions, status, createdAt, updatedAt, isActive) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,NOW(),NOW(),?)";
+            String sql = "INSERT INTO food_listings(donorId, foodName, description, quantity, quantityUnit, foodType, expiryDate, pickupAddress, pickupCity, pickupState, pickupZipCode, pickupInstructions, status, imageUrl, storageCondition, allergenInfo, specialNotes, createdAt, updatedAt, isActive) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,NOW(),NOW(),?)";
             ps = con.prepareStatement(sql);
             ps.setInt(1, flb.getDonorId());
             ps.setString(2, flb.getFoodName());
@@ -36,7 +36,11 @@ public class FoodListingDAO {
             ps.setString(11, flb.getPickupZipCode());
             ps.setString(12, flb.getPickupInstructions());
             ps.setString(13, flb.getStatus());
-            ps.setBoolean(14, flb.isActive());
+            ps.setString(14, flb.getImageUrl());
+            ps.setString(15, flb.getStorageCondition());
+            ps.setString(16, flb.getAllergenInfo());
+            ps.setString(17, flb.getSpecialNotes());
+            ps.setBoolean(18, flb.isActive());
             
             status = ps.executeUpdate();
             
@@ -62,11 +66,11 @@ public class FoodListingDAO {
         try {
             Class.forName(dclass);
             con = DriverManager.getConnection(url, username, password);
-            
+            System.out.println("DEBUG: Connected to DB in FoodListingDAO.getAllFoodListings()");
             String sql = "SELECT fl.*, u.name as donorName, u.city as donorCity FROM food_listings fl JOIN users u ON fl.donorId = u.id WHERE fl.isActive=1 AND fl.status='available' ORDER BY fl.createdAt DESC";
             ps = con.prepareStatement(sql);
             rs = ps.executeQuery();
-            
+            int debugCount = 0;
             while (rs.next()) {
                 FoodListingBean listing = new FoodListingBean();
                 listing.setId(rs.getInt("id"));
@@ -88,10 +92,12 @@ public class FoodListingDAO {
                 listing.setUpdatedAt(rs.getTimestamp("updatedAt"));
                 listing.setActive(rs.getBoolean("isActive"));
                 listings.add(listing);
+                debugCount++;
             }
-            
+            System.out.println("DEBUG: getAllFoodListings returned " + debugCount + " records");
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
+            System.out.println("DEBUG: Exception in getAllFoodListings: " + e.getMessage());
         } finally {
             try {
                 if (rs != null) rs.close();
@@ -322,7 +328,7 @@ public class FoodListingDAO {
             Class.forName(dclass);
             con = DriverManager.getConnection(url, username, password);
             
-            String sql = "UPDATE food_listings SET foodName=?, description=?, quantity=?, quantityUnit=?, foodType=?, expiryDate=?, pickupAddress=?, pickupCity=?, pickupState=?, pickupZipCode=?, pickupInstructions=?, updatedAt=NOW() WHERE id=?";
+            String sql = "UPDATE food_listings SET foodName=?, description=?, quantity=?, quantityUnit=?, foodType=?, expiryDate=?, pickupAddress=?, pickupCity=?, pickupState=?, pickupZipCode=?, pickupInstructions=?, status=?, updatedAt=NOW() WHERE id=?";
             ps = con.prepareStatement(sql);
             ps.setString(1, flb.getFoodName());
             ps.setString(2, flb.getDescription());
@@ -335,7 +341,8 @@ public class FoodListingDAO {
             ps.setString(9, flb.getPickupState());
             ps.setString(10, flb.getPickupZipCode());
             ps.setString(11, flb.getPickupInstructions());
-            ps.setInt(12, flb.getId());
+            ps.setString(12, flb.getStatus());
+            ps.setInt(13, flb.getId());
             
             status = ps.executeUpdate();
             

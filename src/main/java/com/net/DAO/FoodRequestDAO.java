@@ -341,7 +341,46 @@ public class FoodRequestDAO {
         }
         return hasRequest;
     }
+    
+    public static List<FoodRequestBean> getRequestsByFoodId(int foodId) {
+        Connection con = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        List<FoodRequestBean> requests = new ArrayList<>();
+        try {
+            Class.forName(dclass);
+            con = DriverManager.getConnection(url, username, password);
+            String sql = "SELECT fr.*, n.name as ngoName FROM food_requests fr JOIN ngos n ON fr.ngoId = n.id WHERE fr.foodListingId=? AND fr.isActive=1 ORDER BY fr.createdAt DESC";
+            ps = con.prepareStatement(sql);
+            ps.setInt(1, foodId);
+            rs = ps.executeQuery();
+            while (rs.next()) {
+                FoodRequestBean request = new FoodRequestBean();
+                request.setId(rs.getInt("id"));
+                request.setNgoId(rs.getInt("ngoId"));
+                request.setFoodListingId(rs.getInt("foodListingId"));
+                request.setRequestMessage(rs.getString("requestMessage"));
+                request.setPickupDate(rs.getString("pickupDate"));
+                request.setPickupTime(rs.getString("pickupTime"));
+                request.setStatus(rs.getString("status"));
+                request.setDonorResponse(rs.getString("donorResponse"));
+                request.setCreatedAt(rs.getTimestamp("createdAt"));
+                request.setUpdatedAt(rs.getTimestamp("updatedAt"));
+                request.setActive(rs.getBoolean("isActive"));
+                request.setNgoName(rs.getString("ngoName"));
+                requests.add(request);
+            }
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (rs != null) rs.close();
+                if (ps != null) ps.close();
+                if (con != null) con.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return requests;
+    }
 }
-
-
-
