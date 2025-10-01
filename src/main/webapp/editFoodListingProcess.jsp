@@ -12,6 +12,8 @@ String idParam = request.getParameter("id");
 String quantityParam = request.getParameter("quantity");
 String pickupInstructions = request.getParameter("pickupInstructions");
 String status = request.getParameter("status");
+String expiryDate = request.getParameter("expiryDate");
+String storageCondition = request.getParameter("storageCondition");
 
 if (idParam == null || quantityParam == null || status == null) {
     response.sendRedirect("donorDashboard.jsp?error=missing_fields");
@@ -28,6 +30,12 @@ try {
     food.setQuantity(quantity);
     food.setPickupInstructions(pickupInstructions);
     food.setStatus(status);
+    if (expiryDate != null && !expiryDate.trim().isEmpty()) {
+        food.setExpiryDate(java.sql.Date.valueOf(expiryDate));
+    }
+    if (storageCondition != null) {
+        food.setStorageCondition(storageCondition);
+    }
     int updated = FoodListingDAO.updateFoodListing(food);
     if (updated > 0) {
         response.sendRedirect("donorDashboard.jsp?success=listing_updated");

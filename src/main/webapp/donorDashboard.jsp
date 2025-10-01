@@ -1413,16 +1413,7 @@ int totalRequests = myRequests != null ? myRequests.size() : 0;
                     }
                 });
 
-                // Add click handlers for edit buttons
-                document.addEventListener('click', (e) => {
-                    if (e.target.closest('.edit-food-btn')) {
-                        e.stopPropagation();
-                        const foodId = e.target.closest('.edit-food-btn').getAttribute('data-food-id');
-                        if (foodId) {
-                            this.editFoodListing(foodId);
-                        }
-                    }
-                });
+                // Edit buttons handled by native anchor tags
 
                 // Add click handlers for status update buttons
                 document.addEventListener('click', (e) => {

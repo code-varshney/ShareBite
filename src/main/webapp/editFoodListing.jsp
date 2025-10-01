@@ -54,8 +54,16 @@ if (food == null || food.getDonorId() != Integer.parseInt(userId)) {
                                 <input type="text" class="form-control" value="<%= food.getQuantityUnit() %>" disabled />
                             </div>
                             <div class="mb-3">
+                                <label class="form-label">Expiry Date</label>
+                                <input type="date" class="form-control" name="expiryDate" value="<%= food.getExpiryDate() != null ? food.getExpiryDate() : "" %>" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Storage Conditions</label>
+                                <input type="text" class="form-control" name="storageCondition" value="<%= food.getStorageCondition() != null ? food.getStorageCondition() : "" %>" placeholder="e.g., Refrigerated, Room Temperature" />
+                            </div>
+                            <div class="mb-3">
                                 <label class="form-label">Pickup Instructions</label>
-                                <textarea class="form-control" name="pickupInstructions" rows="2"><%= food.getPickupInstructions() != null ? food.getPickupInstructions() : "" %></textarea>
+                                <textarea class="form-control" name="pickupInstructions" rows="2" placeholder="Special instructions for pickup"><%= food.getPickupInstructions() != null ? food.getPickupInstructions() : "" %></textarea>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Status <span class="text-danger">*</span></label>
@@ -64,6 +72,7 @@ if (food == null || food.getDonorId() != Integer.parseInt(userId)) {
                                     <option value="Reserved" <%= "Reserved".equals(food.getStatus()) ? "selected" : "" %>>Reserved</option>
                                     <option value="Collected" <%= "Collected".equals(food.getStatus()) ? "selected" : "" %>>Collected</option>
                                     <option value="Expired" <%= "Expired".equals(food.getStatus()) ? "selected" : "" %>>Expired</option>
+                                    <option value="Inactive" <%= "Inactive".equals(food.getStatus()) ? "selected" : "" %>>Inactive</option>
                                 </select>
                             </div>
                             <div class="d-flex gap-2">
