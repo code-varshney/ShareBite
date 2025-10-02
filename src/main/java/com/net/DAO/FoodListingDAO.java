@@ -21,7 +21,7 @@ public class FoodListingDAO {
             Class.forName(dclass);
             con = DriverManager.getConnection(url, username, password);
             
-            String sql = "INSERT INTO food_listings(donorId, foodName, description, quantity, quantityUnit, foodType, expiryDate, pickupAddress, pickupCity, pickupState, pickupZipCode, pickupInstructions, status, imageUrl, storageCondition, allergenInfo, specialNotes, createdAt, updatedAt, isActive) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,NOW(),NOW(),?)";
+            String sql = "INSERT INTO food_listings(donorId, foodName, description, quantity, quantityUnit, foodType, expiryDate, pickupAddress, pickupCity, pickupState, pickupZipCode, pickupInstructions, status, imageUrl, storageCondition, allergenInfo, specialNotes, latitude, longitude, createdAt, updatedAt, isActive) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,NOW(),NOW(),?)";
             ps = con.prepareStatement(sql);
             ps.setInt(1, flb.getDonorId());
             ps.setString(2, flb.getFoodName());
@@ -40,7 +40,9 @@ public class FoodListingDAO {
             ps.setString(15, flb.getStorageCondition());
             ps.setString(16, flb.getAllergenInfo());
             ps.setString(17, flb.getSpecialNotes());
-            ps.setBoolean(18, flb.isActive());
+            ps.setDouble(18, flb.getLatitude());
+            ps.setDouble(19, flb.getLongitude());
+            ps.setBoolean(20, flb.isActive());
             
             status = ps.executeUpdate();
             

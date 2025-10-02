@@ -24,6 +24,8 @@ public class FoodListingBean {
     private String storageCondition;
     private String allergenInfo;
     private String specialNotes;
+    private double latitude;
+    private double longitude;
 
     // Default constructor
     public FoodListingBean() {}
@@ -216,5 +218,21 @@ public class FoodListingBean {
 
     public void setSpecialNotes(String specialNotes) {
         this.specialNotes = specialNotes;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
     }
 }

@@ -29,6 +29,8 @@ String status = request.getParameter("status");
 String storageCondition = request.getParameter("storageCondition");
 String allergenInfo = request.getParameter("allergenInfo");
 String specialNotes = request.getParameter("specialNotes");
+String latitude = request.getParameter("latitude");
+String longitude = request.getParameter("longitude");
 
 // Validate required fields
 if (foodName == null || foodName.trim().isEmpty() ||
@@ -77,6 +79,21 @@ foodListing.setActive(true);
 foodListing.setStorageCondition(storageCondition != null ? storageCondition.trim() : "");
 foodListing.setAllergenInfo(allergenInfo != null ? allergenInfo.trim() : "");
 foodListing.setSpecialNotes(specialNotes != null ? specialNotes.trim() : "");
+
+// Set location coordinates if provided
+if (latitude != null && !latitude.trim().isEmpty() && longitude != null && !longitude.trim().isEmpty()) {
+    try {
+        foodListing.setLatitude(Double.parseDouble(latitude.trim()));
+        foodListing.setLongitude(Double.parseDouble(longitude.trim()));
+    } catch (NumberFormatException e) {
+        // If coordinates are invalid, set to 0
+        foodListing.setLatitude(0.0);
+        foodListing.setLongitude(0.0);
+    }
+} else {
+    foodListing.setLatitude(0.0);
+    foodListing.setLongitude(0.0);
+}
 
 // Attempt to create food listing
 int listingStatus = FoodListingDAO.createFoodListing(foodListing);

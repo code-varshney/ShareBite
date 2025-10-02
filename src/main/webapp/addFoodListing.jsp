@@ -19,6 +19,8 @@ if (userType == null || !"donor".equals(userType) || userId == null) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBsFCAk-aMJNbajQouFgSQ_7ErRrw8dZ-M&libraries=places"></script>
+
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -146,6 +148,15 @@ if (userType == null || !"donor".equals(userType) || userId == null) {
             max-height: 200px;
             border-radius: 10px;
         }
+        
+        #map {
+            height: 400px;
+            width: 100%;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+        }
+        
+
     </style>
 </head>
 <body>
@@ -240,6 +251,12 @@ if (userType == null || !"donor".equals(userType) || userId == null) {
                 <!-- Pickup Information -->
                 <div class="form-section">
                     <h5><i class="fas fa-map-marker-alt"></i>Pickup Information</h5>
+                    <div class="mb-3">
+                        <button type="button" class="btn btn-outline-primary" onclick="getCurrentLocation()">
+                            <i class="fas fa-location-arrow me-2"></i>Use Current Location
+                        </button>
+                        <small class="form-text text-muted d-block mt-1">Click to automatically fill address with your current location</small>
+                    </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="pickupAddress" class="form-label required-field">Pickup Address</label>
@@ -263,6 +280,13 @@ if (userType == null || !"donor".equals(userType) || userId == null) {
                             <input type="text" class="form-control" id="pickupZipCode" name="pickupZipCode" 
                                    placeholder="ZIP code" required>
                         </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Select Location on Map</label>
+                        <div id="map"></div>
+                        <small class="form-text text-muted">Click on the map to set pickup location</small>
+                        <input type="hidden" id="latitude" name="latitude" value="40.7128">
+                        <input type="hidden" id="longitude" name="longitude" value="-74.0060">
                     </div>
                     <div class="mb-3">
                         <label for="pickupInstructions" class="form-label">Pickup Instructions</label>
@@ -330,11 +354,172 @@ if (userType == null || !"donor".equals(userType) || userId == null) {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // Set minimum date to today
+        let map;
+        let marker;
+        let geocoder;
+        
+        // Set minimum date to today and initialize map
         document.addEventListener('DOMContentLoaded', function() {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('expiryDate').min = today;
+            
+            // Initialize Google Map
+            initMap();
         });
+        
+        function initMap() {
+            // Default location (New York City)
+            const defaultLocation = { lat: 40.7128, lng: -74.0060 };
+            
+            // Create map
+            map = new google.maps.Map(document.getElementById('map'), {
+                zoom: 13,
+                center: defaultLocation,
+                mapTypeId: 'roadmap'
+            });
+            
+            // Create marker
+            marker = new google.maps.Marker({
+                position: defaultLocation,
+                map: map,
+                draggable: true,
+                title: 'Pickup Location'
+            });
+            
+            // Initialize geocoder
+            geocoder = new google.maps.Geocoder();
+            
+            // Add click listener to map
+            map.addListener('click', function(event) {
+                updateMarkerPosition(event.latLng);
+            });
+            
+            // Add drag listener to marker
+            marker.addListener('dragend', function(event) {
+                updateMarkerPosition(event.latLng);
+            });
+            
+            // Update coordinates on load
+            updateCoordinates(defaultLocation.lat, defaultLocation.lng);
+        }
+        
+        function updateMarkerPosition(latLng) {
+            marker.setPosition(latLng);
+            updateCoordinates(latLng.lat(), latLng.lng());
+            
+            // Reverse geocode to get address
+            geocoder.geocode({ location: latLng }, function(results, status) {
+                if (status === 'OK' && results[0]) {
+                    const addressComponents = results[0].address_components;
+                    let streetNumber = '';
+                    let route = '';
+                    let city = '';
+                    let state = '';
+                    let zipCode = '';
+                    
+                    for (let component of addressComponents) {
+                        const types = component.types;
+                        if (types.includes('street_number')) {
+                            streetNumber = component.long_name;
+                        } else if (types.includes('route')) {
+                            route = component.long_name;
+                        } else if (types.includes('locality')) {
+                            city = component.long_name;
+                        } else if (types.includes('administrative_area_level_1')) {
+                            state = component.short_name;
+                        } else if (types.includes('postal_code')) {
+                            zipCode = component.long_name;
+                        }
+                    }
+                    
+                    // Update form fields
+                    document.getElementById('pickupAddress').value = streetNumber + ' ' + route;
+                    document.getElementById('pickupCity').value = city;
+                    document.getElementById('pickupState').value = state;
+                    document.getElementById('pickupZipCode').value = zipCode;
+                }
+            });
+        }
+        
+        function updateCoordinates(lat, lng) {
+            document.getElementById('latitude').value = lat.toFixed(6);
+            document.getElementById('longitude').value = lng.toFixed(6);
+        }
+        
+
+        
+        // Get current location
+        function getCurrentLocation() {
+            if (navigator.geolocation) {
+                const button = event.target;
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Getting Location...';
+                button.disabled = true;
+                
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        const currentLocation = { lat: lat, lng: lng };
+                        
+                        // Update map and marker
+                        map.setCenter(currentLocation);
+                        marker.setPosition(currentLocation);
+                        updateCoordinates(lat, lng);
+                        
+                        // Reverse geocode to get address
+                        geocoder.geocode({ location: currentLocation }, function(results, status) {
+                            if (status === 'OK' && results[0]) {
+                                const addressComponents = results[0].address_components;
+                                let streetNumber = '';
+                                let route = '';
+                                let city = '';
+                                let state = '';
+                                let zipCode = '';
+                                
+                                for (let component of addressComponents) {
+                                    const types = component.types;
+                                    if (types.includes('street_number')) {
+                                        streetNumber = component.long_name;
+                                    } else if (types.includes('route')) {
+                                        route = component.long_name;
+                                    } else if (types.includes('locality')) {
+                                        city = component.long_name;
+                                    } else if (types.includes('administrative_area_level_1')) {
+                                        state = component.short_name;
+                                    } else if (types.includes('postal_code')) {
+                                        zipCode = component.long_name;
+                                    }
+                                }
+                                
+                                // Update form fields
+                                document.getElementById('pickupAddress').value = streetNumber + ' ' + route;
+                                document.getElementById('pickupCity').value = city;
+                                document.getElementById('pickupState').value = state;
+                                document.getElementById('pickupZipCode').value = zipCode;
+                            }
+                        });
+                        
+                        button.innerHTML = originalText;
+                        button.disabled = false;
+                    },
+                    function(error) {
+                        alert('Error getting location: ' + error.message);
+                        button.innerHTML = originalText;
+                        button.disabled = false;
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 60000
+                    }
+                );
+            } else {
+                alert('Geolocation is not supported by this browser.');
+            }
+        }
+        
+
         
         // Image preview functionality
         function previewImage(input) {
