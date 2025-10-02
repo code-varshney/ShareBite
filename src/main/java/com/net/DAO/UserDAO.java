@@ -28,6 +28,7 @@ public class UserDAO {
                     if (rs.next()) {
                         status = 1;
                         ub.setId(rs.getInt("id"));
+                        ub.setName(rs.getString("name"));
                         ub.setEmail(rs.getString("email"));
                         ub.setPassword(rs.getString("password"));
                         ub.setUserType(rs.getString("role"));
@@ -193,11 +194,11 @@ public class UserDAO {
             Class.forName(dclass);
             try (Connection con = DriverManager.getConnection(url, username, password);
                  PreparedStatement ps = con.prepareStatement(
-                    "UPDATE users SET name=?, email=?, phone=?, city=?, organizationName=?, organizationType=?, donationFrequency=? WHERE id=?")) {
+                    "UPDATE users SET name=?, email=?, phone=?, fulladdress=?, organizationName=?, organizationType=?, donationFrequency=? WHERE id=?")) {
                 ps.setString(1, ub.getName());
                 ps.setString(2, ub.getEmail());
                 ps.setString(3, ub.getPhone());
-                ps.setString(4, ub.getCity());
+                ps.setString(4, ub.getFullAddress());
                 ps.setString(5, ub.getOrganizationName());
                 ps.setString(6, ub.getOrganizationType());
                 ps.setString(7, ub.getDonationFrequency());
@@ -256,6 +257,38 @@ public class UserDAO {
             e.printStackTrace();
         }
         return exists;
+    }
+
+    public static UserBean getUserById(int userId) {
+        UserBean user = null;
+        try {
+            Class.forName(dclass);
+            try (Connection con = DriverManager.getConnection(url, username, password);
+                 PreparedStatement ps = con.prepareStatement("SELECT * FROM users WHERE id=? AND isActive=1")) {
+                ps.setInt(1, userId);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        user = new UserBean();
+                        user.setId(rs.getInt("id"));
+                        user.setName(rs.getString("name"));
+                        user.setEmail(rs.getString("email"));
+                        user.setPhone(rs.getString("phone"));
+                        user.setUserType(rs.getString("role"));
+                        user.setOrganizationName(rs.getString("organizationName"));
+                        user.setFullAddress(rs.getString("fulladdress"));
+                        user.setAddress(rs.getString("fulladdress"));
+                        user.setVerificationStatus(rs.getString("verificationStatus"));
+                        user.setActive(rs.getBoolean("isActive"));
+                        user.setOrganizationType(rs.getString("organizationType"));
+                        user.setDonationFrequency(rs.getString("donationFrequency"));
+                        user.setCreatedAt(rs.getString("createdAt"));
+                    }
+                }
+            }
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+        }
+        return user;
     }
 }
 

@@ -1,14 +1,17 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page import="com.net.bean.FoodListingBean" %>
 <%@ page import="com.net.bean.FoodRequestBean" %>
+<%@ page import="com.net.bean.UserBean" %>
 <%@ page import="com.net.DAO.FoodListingDAO" %>
 <%@ page import="com.net.DAO.FoodRequestDAO" %>
+<%@ page import="com.net.DAO.UserDAO" %>
 <%@ page import="java.util.*" %>
 <%
 // Check if user is logged in and is a donor
 String userType = (String) session.getAttribute("userType");
 String userId = (String) session.getAttribute("userId");
 String userName = (String) session.getAttribute("userName");
+String userEmail = (String) session.getAttribute("email");
 
 if (userType == null || !"donor".equals(userType) || userId == null) {
     response.sendRedirect("donorLogin.jsp?error=not_authorized");
@@ -20,6 +23,7 @@ int donorId = Integer.parseInt(userId);
 // Fetch donor data
 List<FoodListingBean> myListings = FoodListingDAO.getFoodListingsByDonor(donorId);
 List<FoodRequestBean> myRequests = FoodRequestDAO.getFoodRequestsForDonor(donorId);
+UserBean donorProfile = UserDAO.getUserById(donorId);
 
 int activeListings = myListings != null ? myListings.size() : 0;
 int totalRequests = myRequests != null ? myRequests.size() : 0;
@@ -477,7 +481,7 @@ int totalRequests = myRequests != null ? myRequests.size() : 0;
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="#profile" class="nav-link">
+                            <a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#profileModal">
                                 <i class="fas fa-user-cog me-2"></i>Profile
                             </a>
                         </li>
@@ -906,8 +910,347 @@ int totalRequests = myRequests != null ? myRequests.size() : 0;
         </div>
     </div>
 
+    <!-- Profile Modal -->
+    <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="profileModalLabel">
+                        <i class="fas fa-user-circle me-2"></i>My Profile
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <% if (donorProfile != null) { %>
+                    <!-- View Mode -->
+                    <div id="profileView">
+                        <div class="row">
+                            <div class="col-md-4 text-center mb-4">
+                                <i class="fas fa-user-circle fa-5x text-success mb-3"></i>
+                                <h5><%= donorProfile.getName() != null ? donorProfile.getName() : (userName != null ? userName : "Donor") %></h5>
+                                <p class="text-muted">Food Donor</p>
+                                <span class="badge bg-success">DONOR</span>
+                            </div>
+                            <div class="col-md-8">
+                                <h6 class="text-success mb-3">Personal Information</h6>
+                                <div class="row mb-2">
+                                    <div class="col-sm-4"><strong>Name:</strong></div>
+                                    <div class="col-sm-8"><%= donorProfile.getName() != null ? donorProfile.getName() : (userName != null ? userName : "N/A") %></div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-sm-4"><strong>Email:</strong></div>
+                                    <div class="col-sm-8"><%= donorProfile.getEmail() != null ? donorProfile.getEmail() : (userEmail != null ? userEmail : "N/A") %></div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-sm-4"><strong>Phone:</strong></div>
+                                    <div class="col-sm-8"><%= donorProfile.getPhone() != null ? donorProfile.getPhone() : "Not provided" %></div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-sm-4"><strong>Address:</strong></div>
+                                    <div class="col-sm-8"><%= donorProfile.getFullAddress() != null ? donorProfile.getFullAddress() : "Not provided" %></div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-sm-4"><strong>Organization:</strong></div>
+                                    <div class="col-sm-8"><%= donorProfile.getOrganizationName() != null ? donorProfile.getOrganizationName() : "Individual" %></div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-sm-4"><strong>Donation Frequency:</strong></div>
+                                    <div class="col-sm-8"><%= donorProfile.getDonationFrequency() != null ? donorProfile.getDonationFrequency() : "Not specified" %></div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-sm-4"><strong>Member Since:</strong></div>
+                                    <div class="col-sm-8"><%= donorProfile.getCreatedAt() != null ? donorProfile.getCreatedAt().substring(0, 10) : "N/A" %></div>
+                                </div>
+                                <hr>
+                                <h6 class="text-success mb-3">Statistics</h6>
+                                <div class="row">
+                                    <div class="col-6 text-center">
+                                        <h4 class="text-success"><%= activeListings %></h4>
+                                        <small class="text-muted">Active Listings</small>
+                                    </div>
+                                    <div class="col-6 text-center">
+                                        <h4 class="text-success"><%= totalRequests %></h4>
+                                        <small class="text-muted">Total Requests</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Edit Mode -->
+                    <div id="profileEdit" style="display: none;">
+                        <form id="profileForm" action="updateProfile.jsp" method="post" class="needs-validation" novalidate>
+                            <input type="hidden" name="userId" value="<%= donorId %>">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Name <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="name" value="<%= donorProfile.getName() != null ? donorProfile.getName() : (userName != null ? userName : "") %>" required>
+                                    <div class="invalid-feedback">Please provide your name.</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Email <span class="text-danger">*</span></label>
+                                    <input type="email" class="form-control" name="email" value="<%= donorProfile.getEmail() != null ? donorProfile.getEmail() : (userEmail != null ? userEmail : "") %>" required>
+                                    <div class="invalid-feedback">Please provide a valid email address.</div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Phone</label>
+                                    <input type="tel" class="form-control" name="phone" value="<%= donorProfile.getPhone() != null ? donorProfile.getPhone() : "" %>">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Organization Name</label>
+                                    <input type="text" class="form-control" name="organizationName" value="<%= donorProfile.getOrganizationName() != null ? donorProfile.getOrganizationName() : "" %>">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Address</label>
+                                <textarea class="form-control" name="fulladdress" rows="2"><%= donorProfile.getFullAddress() != null ? donorProfile.getFullAddress() : "" %></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Donation Frequency</label>
+                                <select class="form-select" name="donationFrequency">
+                                    <option value="">Select frequency</option>
+                                    <option value="Weekly" <%= "Weekly".equals(donorProfile.getDonationFrequency()) ? "selected" : "" %>>Weekly</option>
+                                    <option value="Monthly" <%= "Monthly".equals(donorProfile.getDonationFrequency()) ? "selected" : "" %>>Monthly</option>
+                                    <option value="Occasionally" <%= "Occasionally".equals(donorProfile.getDonationFrequency()) ? "selected" : "" %>>Occasionally</option>
+                                    <option value="As needed" <%= "As needed".equals(donorProfile.getDonationFrequency()) ? "selected" : "" %>>As needed</option>
+                                </select>
+                            </div>
+                        </form>
+                    </div>
+                    <% } else { %>
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Unable to load profile information. Please try again later.
+                        </div>
+                    <% } %>
+                </div>
+                <div class="modal-footer">
+                    <div id="viewButtons">
+                        <button type="button" class="btn btn-primary" onclick="toggleEditMode()">Edit Profile</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                    <div id="editButtons" style="display: none;">
+                        <button type="button" class="btn btn-success" onclick="saveProfile()">Save Changes</button>
+                        <button type="button" class="btn btn-secondary" onclick="toggleEditMode()">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        function toggleEditMode() {
+            const viewMode = document.getElementById('profileView');
+            const editMode = document.getElementById('profileEdit');
+            const viewButtons = document.getElementById('viewButtons');
+            const editButtons = document.getElementById('editButtons');
+            
+            if (viewMode.style.display === 'none') {
+                viewMode.style.display = 'block';
+                editMode.style.display = 'none';
+                viewButtons.style.display = 'block';
+                editButtons.style.display = 'none';
+            } else {
+                viewMode.style.display = 'none';
+                editMode.style.display = 'block';
+                viewButtons.style.display = 'none';
+                editButtons.style.display = 'block';
+            }
+        }
+        
+        function saveProfile() {
+            const form = document.getElementById('profileForm');
+            const formData = new FormData(form);
+            
+            fetch('updateProfile.jsp', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                if (data.includes('SUCCESS')) {
+                    alert('Profile updated successfully!');
+                    location.reload();
+                } else {
+                    alert('Error updating profile.');
+                }
+            })
+            .catch(() => alert('Error updating profile.'));
+        }
+        function toggleEditMode() {
+            const viewMode = document.getElementById('profileView');
+            const editMode = document.getElementById('profileEdit');
+            const viewButtons = document.getElementById('viewButtons');
+            const editButtons = document.getElementById('editButtons');
+            
+            if (viewMode && editMode && viewButtons && editButtons) {
+                if (editMode.style.display === 'block') {
+                    viewMode.style.display = 'block';
+                    editMode.style.display = 'none';
+                    viewButtons.style.display = 'block';
+                    editButtons.style.display = 'none';
+                } else {
+                    viewMode.style.display = 'none';
+                    editMode.style.display = 'block';
+                    viewButtons.style.display = 'none';
+                    editButtons.style.display = 'block';
+                }
+            }
+        }
+        
+        function saveProfile() {
+            const form = document.getElementById('profileForm');
+            if (!form.checkValidity()) {
+                form.classList.add('was-validated');
+                return;
+            }
+            
+            const formData = new FormData(form);
+            const saveBtn = document.querySelector('#editButtons .btn-success');
+            const originalText = saveBtn.innerHTML;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+            saveBtn.disabled = true;
+            
+            fetch('updateProfile.jsp', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                if (data.includes('SUCCESS')) {
+                    alert('Profile updated successfully!');
+                    location.reload();
+                } else {
+                    alert('Error updating profile: ' + data);
+                }
+            })
+            .catch(error => {
+                alert('Error updating profile. Please try again.');
+            })
+            .finally(() => {
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+            });
+        }
+        
+        // Global function for profile edit toggle
+        window.toggleEditMode = function() {
+            console.log('toggleEditMode called');
+            const viewMode = document.getElementById('profileView');
+            const editMode = document.getElementById('profileEdit');
+            const viewButtons = document.getElementById('viewButtons');
+            const editButtons = document.getElementById('editButtons');
+            
+            console.log('Elements:', {viewMode, editMode, viewButtons, editButtons});
+            
+            if (viewMode && editMode && viewButtons && editButtons) {
+                if (editMode.style.display === 'block') {
+                    // Switch to view mode
+                    viewMode.style.display = 'block';
+                    editMode.style.display = 'none';
+                    viewButtons.style.display = 'block';
+                    editButtons.style.display = 'none';
+                } else {
+                    // Switch to edit mode
+                    viewMode.style.display = 'none';
+                    editMode.style.display = 'block';
+                    viewButtons.style.display = 'none';
+                    editButtons.style.display = 'block';
+                }
+            } else {
+                console.error('Profile elements not found');
+            }
+        };
+        
+        // Global function for saving profile
+        window.saveProfile = function() {
+            const form = document.getElementById('profileForm');
+            if (!form.checkValidity()) {
+                form.classList.add('was-validated');
+                return;
+            }
+            
+            const formData = new FormData(form);
+            
+            // Show loading state
+            const saveBtn = document.querySelector('#editButtons .btn-success');
+            const originalText = saveBtn.innerHTML;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+            saveBtn.disabled = true;
+            
+            fetch('updateProfile.jsp', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                if (data.includes('SUCCESS')) {
+                    alert('Profile updated successfully!');
+                    location.reload();
+                } else {
+                    alert('Error updating profile: ' + data);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error updating profile. Please try again.');
+            })
+            .finally(() => {
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+            });
+        };
+        
+        function toggleEditMode() {
+            return window.toggleEditMode();
+        }
+        
+        function saveProfile() {
+            return window.saveProfile();
+        }
+        
+        function oldSaveProfile() {
+            const form = document.getElementById('profileForm');
+            if (!form.checkValidity()) {
+                form.classList.add('was-validated');
+                return;
+            }
+            
+            const formData = new FormData(form);
+            
+            // Show loading state
+            const saveBtn = document.querySelector('#editButtons .btn-success');
+            const originalText = saveBtn.innerHTML;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+            saveBtn.disabled = true;
+            
+            fetch('updateProfile.jsp', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                console.log('Response:', data);
+                if (data.includes('SUCCESS')) {
+                    alert('Profile updated successfully!');
+                    location.reload();
+                } else {
+                    alert('Error updating profile: ' + data);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error updating profile. Please try again.');
+            })
+            .finally(() => {
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+            });
+        }
+        
         // Dynamic Dashboard Functionality
         class DonorDashboard {
             constructor() {
@@ -1335,6 +1678,166 @@ int totalRequests = myRequests != null ? myRequests.size() : 0;
             }
 
             loadProfileData() {
+                const donorId = document.body.getAttribute('data-donor-id');
+                const formData = new FormData();
+                formData.append('userId', donorId);
+                
+                fetch('getProfileData.jsp', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.text())
+                .then(data => {
+                    let userData = { name: '', email: '', phone: '', address: '', organizationName: '', donationFrequency: '', verificationStatus: 'pending' };
+                    
+                    if (data && data.includes('SUCCESS:')) {
+                        try {
+                            const jsonData = data.split('SUCCESS:')[1];
+                            const parsed = JSON.parse(jsonData);
+                            userData = { ...userData, ...parsed };
+                        } catch (e) {
+                            console.log('Using default profile data');
+                        }
+                    }
+                    
+                    const content = '<div class="main-content">' +
+                        '<h4 class="mb-4"><i class="fas fa-user-cog me-2"></i>Profile Settings</h4>' +
+                        '<div class="row">' +
+                            '<div class="col-md-4">' +
+                                '<div class="card text-center">' +
+                                    '<div class="card-body">' +
+                                        '<div class="profile-avatar mb-3">' +
+                                            '<i class="fas fa-user-circle fa-5x text-primary"></i>' +
+                                        '</div>' +
+                                        '<h5>' + (userData.name || 'Donor') + '</h5>' +
+                                        '<p class="text-muted">Food Donor</p>' +
+                                        '<span class="badge ' + (userData.verificationStatus === 'verified' ? 'bg-success' : 'bg-warning') + '">' +
+                                            (userData.verificationStatus || 'Pending') + ' Status' +
+                                        '</span>' +
+                                    '</div>' +
+                                '</div>' +
+                            '</div>' +
+                            '<div class="col-md-8">' +
+                                '<div class="card">' +
+                                    '<div class="card-header">' +
+                                        '<h6 class="mb-0"><i class="fas fa-edit me-2"></i>Edit Profile Information</h6>' +
+                                    '</div>' +
+                                    '<div class="card-body">' +
+                                        '<form id="profile-form" class="needs-validation" novalidate>' +
+                                            '<div class="row">' +
+                                                '<div class="col-md-6 mb-3">' +
+                                                    '<label class="form-label">Full Name <span class="text-danger">*</span></label>' +
+                                                    '<input type="text" class="form-control" name="name" value="' + (userData.name || '') + '" required>' +
+                                                    '<div class="invalid-feedback">Please provide your full name.</div>' +
+                                                '</div>' +
+                                                '<div class="col-md-6 mb-3">' +
+                                                    '<label class="form-label">Email <span class="text-danger">*</span></label>' +
+                                                    '<input type="email" class="form-control" name="email" value="' + (userData.email || '') + '" required>' +
+                                                    '<div class="invalid-feedback">Please provide a valid email.</div>' +
+                                                '</div>' +
+                                            '</div>' +
+                                            '<div class="row">' +
+                                                '<div class="col-md-6 mb-3">' +
+                                                    '<label class="form-label">Phone Number</label>' +
+                                                    '<input type="tel" class="form-control" name="phone" value="' + (userData.phone || '') + '" placeholder="+1234567890">' +
+                                                '</div>' +
+                                                '<div class="col-md-6 mb-3">' +
+                                                    '<label class="form-label">Donation Frequency</label>' +
+                                                    '<select class="form-select" name="donationFrequency">' +
+                                                        '<option value="">Select frequency</option>' +
+                                                        '<option value="Weekly"' + (userData.donationFrequency === 'Weekly' ? ' selected' : '') + '>Weekly</option>' +
+                                                        '<option value="Monthly"' + (userData.donationFrequency === 'Monthly' ? ' selected' : '') + '>Monthly</option>' +
+                                                        '<option value="Occasionally"' + (userData.donationFrequency === 'Occasionally' ? ' selected' : '') + '>Occasionally</option>' +
+                                                        '<option value="As needed"' + (userData.donationFrequency === 'As needed' ? ' selected' : '') + '>As needed</option>' +
+                                                    '</select>' +
+                                                '</div>' +
+                                            '</div>' +
+                                            '<div class="mb-3">' +
+                                                '<label class="form-label">Address</label>' +
+                                                '<textarea class="form-control" name="fulladdress" rows="2" placeholder="Enter your full address">' + (userData.address || '') + '</textarea>' +
+                                            '</div>' +
+                                            '<div class="mb-3">' +
+                                                '<label class="form-label">Organization Name (if applicable)</label>' +
+                                                '<input type="text" class="form-control" name="organizationName" value="' + (userData.organizationName || '') + '" placeholder="Restaurant, Hotel, etc.">' +
+                                            '</div>' +
+                                            '<div class="d-flex gap-2">' +
+                                                '<button type="submit" class="btn btn-primary">' +
+                                                    '<i class="fas fa-save me-2"></i>Update Profile' +
+                                                '</button>' +
+                                                '<button type="button" class="btn btn-secondary" onclick="dashboard.showSection(\'dashboard\')">' +
+                                                    '<i class="fas fa-times me-2"></i>Cancel' +
+                                                '</button>' +
+                                            '</div>' +
+                                        '</form>' +
+                                    '</div>' +
+                                '</div>' +
+                            '</div>' +
+                        '</div>' +
+                    '</div>';
+                    
+                    this.updateMainContent(content);
+                    this.setupProfileForm();
+                })
+                .catch(error => {
+                    console.error('Error fetching profile:', error);
+                    const content = '<div class="main-content">' +
+                        '<h4 class="mb-4"><i class="fas fa-user-cog me-2"></i>Profile Settings</h4>' +
+                        '<div class="alert alert-danger">Error loading profile data. Please try again.</div>' +
+                    '</div>';
+                    this.updateMainContent(content);
+                });
+            }
+
+            setupProfileForm() {
+                const form = document.getElementById('profile-form');
+                if (form) {
+                    form.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        this.updateProfile(form);
+                    });
+                }
+            }
+
+            updateProfile(form) {
+                if (form.checkValidity()) {
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Updating...';
+                    submitBtn.disabled = true;
+
+                    const formData = new FormData(form);
+                    const donorId = document.body.getAttribute('data-donor-id');
+                    formData.append('userId', donorId);
+
+                    fetch('updateProfile.jsp', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.text())
+                    .then(data => {
+                        if (data.includes('SUCCESS')) {
+                            this.showNotification('Profile updated successfully!', 'success');
+                            setTimeout(() => {
+                                this.loadProfileData();
+                            }, 1000);
+                        } else {
+                            throw new Error('Update failed');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        this.showNotification('Error updating profile. Please try again.', 'danger');
+                    })
+                    .finally(() => {
+                        submitBtn.innerHTML = originalText;
+                        submitBtn.disabled = false;
+                    });
+                } else {
+                    form.classList.add('was-validated');
+                }
+            }
+
+            oldLoadProfileData() {
                 const content = '<div class="main-content">' +
                     '<h4 class="mb-4"><i class="fas fa-user-cog me-2"></i>Profile Settings</h4>' +
                     '<div class="row">' +
