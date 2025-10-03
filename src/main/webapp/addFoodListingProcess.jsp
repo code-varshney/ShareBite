@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page import="com.net.bean.FoodListingBean" %>
 <%@ page import="com.net.DAO.FoodListingDAO" %>
+<%@ page import="com.net.DAO.NotificationDAO" %>
 <%@ page import="java.util.*" %>
 
 <%
@@ -97,10 +98,21 @@ if (latitude != null && !latitude.trim().isEmpty() && longitude != null && !long
 
 // Attempt to create food listing
 int listingStatus = FoodListingDAO.createFoodListing(foodListing);
+System.out.println("DEBUG: Food listing creation result: " + listingStatus);
 
 if (listingStatus > 0) {
+    // Get donor name for notification
+    String donorName = (String) session.getAttribute("userName");
+    if (donorName == null) donorName = "Unknown Donor";
+    
+    System.out.println("DEBUG: About to notify NGOs - donorId: " + userId + ", foodListingId: " + listingStatus + ", donorName: " + donorName + ", foodName: " + foodName);
+    
+    // Notify all NGOs about new food listing
+    NotificationDAO.notifyAllNGOsAboutNewFood(Integer.parseInt(userId), listingStatus, donorName, foodName);
+    
     response.sendRedirect("donorDashboard.jsp?success=listing_created");
 } else {
+    System.out.println("DEBUG: Food listing creation failed");
     response.sendRedirect("addFoodListing.jsp?error=creation_failed");
 }
 %>

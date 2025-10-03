@@ -5,6 +5,8 @@
 <%@ page import="com.net.DAO.FoodListingDAO" %>
 <%@ page import="com.net.DAO.FoodRequestDAO" %>
 <%@ page import="com.net.DAO.NGODetailsDAO" %>
+<%@ page import="com.net.DAO.NotificationDAO" %>
+<%@ page import="com.net.bean.NotificationBean" %>
 <%@ page import="java.util.*" %>
 
 <%
@@ -30,6 +32,10 @@ List<FoodRequestBean> ngoRequests = FoodRequestDAO.getFoodRequestsByNgo(ngoId);
 
 // Fetch NGO details bean
 NGODetailsBean ngoDetails = NGODetailsDAO.getNGODetailsByUserId(ngoId);
+
+// Get notifications for this NGO
+List<NotificationBean> notifications = NotificationDAO.getNotificationsByNGO(ngoId);
+int unreadCount = NotificationDAO.getUnreadCount(ngoId);
 %>
 
 <!DOCTYPE html>
@@ -174,6 +180,14 @@ NGODetailsBean ngoDetails = NGODetailsDAO.getNGODetailsByUserId(ngoId);
                 <i class="fas fa-users me-2"></i>Sharebite NGO Portal
             </a>
             <div class="navbar-nav ms-auto">
+                <a class="nav-link position-relative me-3" href="#" data-bs-toggle="modal" data-bs-target="#notificationsModal">
+                    <i class="fas fa-bell"></i>
+                    <% if (unreadCount > 0) { %>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            <%= unreadCount %>
+                        </span>
+                    <% } %>
+                </a>
                 <span class="navbar-text me-3">
                     <i class="fas fa-user me-2"></i><%= organizationName != null ? organizationName : userName %>
                 </span>
@@ -199,7 +213,7 @@ NGODetailsBean ngoDetails = NGODetailsDAO.getNGODetailsByUserId(ngoId);
                         <a class="nav-link" href="#my-requests" onclick="showSection('my-requests')">
                             <i class="fas fa-list"></i>My Requests
                         </a>
-                        <a class="nav-link" href="#profile" onclick="showSection('profile')">
+                        <a class="nav-link" href="#" data-bs-toggle="modal" data-bs-target="#profileModal">
                             <i class="fas fa-user-cog"></i>Profile
                         </a>
                     </nav>
@@ -474,50 +488,7 @@ NGODetailsBean ngoDetails = NGODetailsDAO.getNGODetailsByUserId(ngoId);
                     <% } %>
                 </div>
 
-                <!-- Profile Section -->
-                <div id="profile" class="main-content" style="display: none;">
-                    <h3 class="mb-4">
-                        <i class="fas fa-user-cog me-2"></i>Organization Profile
-                    </h3>
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h5 class="card-title">Organization Information</h5>
-                                    <p><strong>Name:</strong> <%= organizationName != null ? organizationName : "N/A" %></p>
-                                    <% if (ngoDetails != null) { %>
-    <p><strong>Registration Number:</strong> <%= ngoDetails.getRegistrationNumber() != null ? ngoDetails.getRegistrationNumber() : "N/A" %></p>
-    <p><strong>Mission:</strong> <%= ngoDetails.getMission() != null ? ngoDetails.getMission() : "N/A" %></p>
-    <p><strong>Contact Person:</strong> <%= ngoDetails.getContactPerson() != null ? ngoDetails.getContactPerson() : "N/A" %></p>
-    <p><strong>Contact Title:</strong> <%= ngoDetails.getContactTitle() != null ? ngoDetails.getContactTitle() : "N/A" %></p>
-    <p><strong>Website:</strong> <%= ngoDetails.getWebsite() != null ? ngoDetails.getWebsite() : "N/A" %></p>
-    <p><strong>Service Area:</strong> <%= ngoDetails.getServiceArea() != null ? ngoDetails.getServiceArea() : "N/A" %></p>
-<% } else { %>
-    <p>No NGO details found.</p>
-<% } %>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-body">
-                                    <h5 class="card-title">Account Status</h5>
-                                    <p><strong>Username:</strong> <%= session.getAttribute("username") %></p>
-                                    <p><strong>User Type:</strong> <%= session.getAttribute("userType") %></p>
-                                    <p><strong>Verification Status:</strong> 
-                                        <span class="badge bg-success">Verified</span>
-                                    </p>
-                                    <p><strong>Member Since:</strong> <%= session.getAttribute("createdAt") != null ? session.getAttribute("createdAt") : "N/A" %></p>
-                                    
-                                    <button class="btn btn-primary mt-3">
-                                        <i class="fas fa-edit me-2"></i>Edit Profile
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
             </div>
         </div>
     </div>
@@ -531,11 +502,12 @@ NGODetailsBean ngoDetails = NGODetailsDAO.getNGODetailsByUserId(ngoId);
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <form id="requestForm">
+                    <form id="requestForm" class="needs-validation" novalidate>
                         <input type="hidden" id="foodListingId" name="foodListingId">
                         <div class="mb-3">
                             <label for="pickupDate" class="form-label">Pickup Date *</label>
                             <input type="date" class="form-control" id="pickupDate" name="pickupDate" required>
+                            <div class="invalid-feedback">Please select a pickup date.</div>
                         </div>
                         <div class="mb-3">
                             <label for="pickupTime" class="form-label">Pickup Time</label>
@@ -556,14 +528,249 @@ NGODetailsBean ngoDetails = NGODetailsDAO.getNGODetailsByUserId(ngoId);
         </div>
     </div>
 
-    <!-- DEBUG: Food Listings Info -->
-    <% 
-        out.println("<div style='color:red;'>DEBUG: availableFood size = " + (availableFood != null ? availableFood.size() : "null") + "</div>");
-        if (availableFood != null && !availableFood.isEmpty()) {
-            FoodListingBean debugFood = availableFood.get(0);
-            out.println("<div style='color:red;'>DEBUG: First food name = " + debugFood.getFoodName() + ", Status = " + debugFood.getStatus() + ", isActive = " + debugFood.isActive() + "</div>");
-        }
-    %>
+
+
+    <!-- Notifications Modal -->
+    <div class="modal fade" id="notificationsModal" tabindex="-1" aria-labelledby="notificationsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title" id="notificationsModalLabel">
+                        <i class="fas fa-bell me-2"></i>Notifications
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="max-height: 500px; overflow-y: auto;">
+                    <% if (notifications != null && !notifications.isEmpty()) { %>
+                        <% for (NotificationBean notification : notifications) { %>
+                            <div class="card mb-3 <%= !notification.isRead() ? "border-primary" : "" %>">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <h6 class="card-title mb-2">
+                                                <i class="fas fa-utensils text-success me-2"></i>
+                                                <%= notification.getFoodName() != null ? notification.getFoodName() : "New Food Available" %>
+                                                <% if (!notification.isRead()) { %>
+                                                    <span class="badge bg-primary ms-2">New</span>
+                                                <% } %>
+                                            </h6>
+                                            <p class="card-text mb-2">
+                                                <strong>Donor:</strong> <%= notification.getDonorName() != null ? notification.getDonorName() : "Unknown" %><br>
+                                                <strong>Message:</strong> <%= notification.getMessage() %>
+                                            </p>
+                                            <small class="text-muted">
+                                                <i class="fas fa-clock me-1"></i>
+                                                <%= notification.getCreatedAt() %>
+                                            </small>
+                                        </div>
+                                        <div class="ms-3">
+                                            <% if (notification.getFoodListingId() > 0) { %>
+                                                <button class="btn btn-sm btn-outline-primary" onclick="viewFoodDetails(<%= notification.getFoodListingId() %>)">
+                                                    <i class="fas fa-eye me-1"></i>View Details
+                                                </button>
+                                            <% } %>
+                                            <% if (!notification.isRead()) { %>
+                                                <button class="btn btn-sm btn-outline-secondary mt-1" onclick="markAsRead(<%= notification.getId() %>)">
+                                                    <i class="fas fa-check me-1"></i>Mark Read
+                                                </button>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <% } %>
+                    <% } else { %>
+                        <div class="text-center py-4">
+                            <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No notifications yet</h5>
+                            <p class="text-muted">You'll receive notifications when donors add new food listings.</p>
+                        </div>
+                    <% } %>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <% if (unreadCount > 0) { %>
+                        <button type="button" class="btn btn-primary" onclick="markAllAsRead()">Mark All as Read</button>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="profileModalLabel">
+                        <i class="fas fa-user-circle me-2"></i>Organization Profile
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- View Mode -->
+                    <div id="profileView">
+                        <div class="row">
+                            <div class="col-md-4 text-center mb-4">
+                                <i class="fas fa-users fa-5x text-primary mb-3"></i>
+                                <h5 id="displayOrgName"><%= organizationName != null ? organizationName : userName %></h5>
+                                <p class="text-muted">NGO Organization</p>
+                                <span class="badge bg-primary">NGO</span>
+                            </div>
+                            <div class="col-md-8">
+                                <h6 class="text-primary mb-3">Organization Information</h6>
+                                <div class="row mb-2">
+                                    <div class="col-sm-4"><strong>Organization:</strong></div>
+                                    <div class="col-sm-8" id="viewOrgName"><%= organizationName != null ? organizationName : "N/A" %></div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-sm-4"><strong>Registration #:</strong></div>
+                                    <div class="col-sm-8" id="viewRegNumber"><%= ngoDetails != null && ngoDetails.getRegistrationNumber() != null ? ngoDetails.getRegistrationNumber() : "Not provided" %></div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-sm-4"><strong>Mission:</strong></div>
+                                    <div class="col-sm-8" id="viewMission"><%= ngoDetails != null && ngoDetails.getMission() != null ? ngoDetails.getMission() : "Not provided" %></div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-sm-4"><strong>Contact Person:</strong></div>
+                                    <div class="col-sm-8" id="viewContactPerson"><%= ngoDetails != null && ngoDetails.getContactPerson() != null ? ngoDetails.getContactPerson() : "Not provided" %></div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-sm-4"><strong>Contact Title:</strong></div>
+                                    <div class="col-sm-8" id="viewContactTitle"><%= ngoDetails != null && ngoDetails.getContactTitle() != null ? ngoDetails.getContactTitle() : "Not provided" %></div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-sm-4"><strong>Email:</strong></div>
+                                    <div class="col-sm-8" id="viewEmail">Not provided</div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-sm-4"><strong>Phone:</strong></div>
+                                    <div class="col-sm-8" id="viewPhone">Not provided</div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-sm-4"><strong>Address:</strong></div>
+                                    <div class="col-sm-8" id="viewAddress">Not provided</div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-sm-4"><strong>Website:</strong></div>
+                                    <div class="col-sm-8" id="viewWebsite"><%= ngoDetails != null && ngoDetails.getWebsite() != null ? ngoDetails.getWebsite() : "Not provided" %></div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-sm-4"><strong>Service Area:</strong></div>
+                                    <div class="col-sm-8" id="viewServiceArea"><%= ngoDetails != null && ngoDetails.getServiceArea() != null ? ngoDetails.getServiceArea() : "Not provided" %></div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-sm-4"><strong>Organization Type:</strong></div>
+                                    <div class="col-sm-8" id="viewOrgType">Not provided</div>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-sm-4"><strong>Verification Status:</strong></div>
+                                    <div class="col-sm-8" id="viewVerificationStatus">Not provided</div>
+                                </div>
+                                <hr>
+                                <h6 class="text-primary mb-3">Statistics</h6>
+                                <div class="row">
+                                    <div class="col-6 text-center">
+                                        <h4 class="text-primary"><%= ngoRequests != null ? ngoRequests.size() : 0 %></h4>
+                                        <small class="text-muted">Total Requests</small>
+                                    </div>
+                                    <div class="col-6 text-center">
+                                        <h4 class="text-primary"><%= ngoRequests != null ? ngoRequests.stream().filter(r -> "approved".equals(r.getStatus())).count() : 0 %></h4>
+                                        <small class="text-muted">Approved Requests</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Edit Mode -->
+                    <div id="profileEdit" style="display: none;">
+                        <form id="profileForm" class="needs-validation" novalidate>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Organization Name <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control" name="organizationName" id="editOrgName" required>
+                                    <div class="invalid-feedback">Please provide organization name.</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Registration Number</label>
+                                    <input type="text" class="form-control" name="registrationNumber" id="editRegNumber">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Mission Statement</label>
+                                <textarea class="form-control" name="mission" id="editMission" rows="3"></textarea>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Contact Person</label>
+                                    <input type="text" class="form-control" name="contactPerson" id="editContactPerson">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Contact Title</label>
+                                    <input type="text" class="form-control" name="contactTitle" id="editContactTitle">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Email <span class="text-danger">*</span></label>
+                                    <input type="email" class="form-control" name="email" id="editEmail" required>
+                                    <div class="invalid-feedback">Please provide a valid email address.</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Phone</label>
+                                    <input type="tel" class="form-control" name="phone" id="editPhone">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Website</label>
+                                    <input type="url" class="form-control" name="website" id="editWebsite">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Service Area</label>
+                                    <input type="text" class="form-control" name="serviceArea" id="editServiceArea">
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Address</label>
+                                <textarea class="form-control" name="address" id="editAddress" rows="2"></textarea>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Organization Type</label>
+                                    <select class="form-select" name="organizationType" id="editOrgType">
+                                        <option value="">Select Type</option>
+                                        <option value="Charity">Charity</option>
+                                        <option value="Non-Profit">Non-Profit</option>
+                                        <option value="Religious">Religious Organization</option>
+                                        <option value="Community">Community Group</option>
+                                        <option value="Government">Government Agency</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Verification Status</label>
+                                    <input type="text" class="form-control" name="verificationStatus" id="editVerificationStatus" readonly>
+                                    <small class="text-muted">Contact admin to change verification status</small>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div id="viewButtons">
+                        <button type="button" class="btn btn-primary" onclick="toggleEditMode()">Edit Profile</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                    <div id="editButtons" style="display: none;">
+                        <button type="button" class="btn btn-success" onclick="saveProfile()">Save Changes</button>
+                        <button type="button" class="btn btn-secondary" onclick="toggleEditMode()">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -597,18 +804,38 @@ NGODetailsBean ngoDetails = NGODetailsDAO.getNGODetailsByUserId(ngoId);
         
         function submitRequest() {
             const form = document.getElementById('requestForm');
+            if (!form.checkValidity()) {
+                form.classList.add('was-validated');
+                return;
+            }
+            
             const formData = new FormData(form);
             
-            // Here you would typically submit the form via AJAX
-            // For now, we'll just close the modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('requestModal'));
-            modal.hide();
-            
-            // Show success message
-            alert('Food request submitted successfully!');
-            
-            // Refresh the page to show updated requests
-            location.reload();
+            fetch('submitFoodRequest.jsp', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (response.redirected) {
+                    window.location.href = response.url;
+                } else {
+                    return response.text();
+                }
+            })
+            .then(data => {
+                if (data && data.includes('error')) {
+                    alert('Error submitting request. Please try again.');
+                } else {
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('requestModal'));
+                    modal.hide();
+                    alert('Food request submitted successfully!');
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error submitting request. Please try again.');
+            });
         }
         
         function showResponse(response) {
@@ -629,7 +856,234 @@ NGODetailsBean ngoDetails = NGODetailsDAO.getNGODetailsByUserId(ngoId);
         document.addEventListener('DOMContentLoaded', function() {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('pickupDate').min = today;
+            
+            // Load profile data when modal is opened
+            const profileModal = document.getElementById('profileModal');
+            if (profileModal) {
+                profileModal.addEventListener('show.bs.modal', function() {
+                    loadProfileData();
+                });
+            }
         });
+        
+        // Profile management functions
+        function loadProfileData() {
+            fetch('getNGOProfileData.jsp')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Profile data received:', data);
+                    if (data.status === 'SUCCESS') {
+                        // Update view mode
+                        document.getElementById('viewOrgName').textContent = data.organizationName || 'Not provided';
+                        document.getElementById('displayOrgName').textContent = data.organizationName || 'NGO';
+                        document.getElementById('viewRegNumber').textContent = data.registrationNumber || 'Not provided';
+                        document.getElementById('viewMission').textContent = data.mission || 'Not provided';
+                        document.getElementById('viewContactPerson').textContent = data.contactPerson || 'Not provided';
+                        document.getElementById('viewContactTitle').textContent = data.contactTitle || 'Not provided';
+                        document.getElementById('viewEmail').textContent = data.email || 'Not provided';
+                        document.getElementById('viewPhone').textContent = data.phone || 'Not provided';
+                        document.getElementById('viewAddress').textContent = data.address || 'Not provided';
+                        document.getElementById('viewWebsite').textContent = data.website || 'Not provided';
+                        document.getElementById('viewServiceArea').textContent = data.serviceArea || 'Not provided';
+                        document.getElementById('viewOrgType').textContent = data.organizationType || 'Not provided';
+                        document.getElementById('viewVerificationStatus').textContent = data.verificationStatus || 'Not provided';
+                        
+                        // Update edit mode
+                        document.getElementById('editOrgName').value = data.organizationName || '';
+                        document.getElementById('editRegNumber').value = data.registrationNumber || '';
+                        document.getElementById('editMission').value = data.mission || '';
+                        document.getElementById('editContactPerson').value = data.contactPerson || '';
+                        document.getElementById('editContactTitle').value = data.contactTitle || '';
+                        document.getElementById('editEmail').value = data.email || '';
+                        document.getElementById('editPhone').value = data.phone || '';
+                        document.getElementById('editWebsite').value = data.website || '';
+                        document.getElementById('editServiceArea').value = data.serviceArea || '';
+                        document.getElementById('editAddress').value = data.address || '';
+                        document.getElementById('editOrgType').value = data.organizationType || '';
+                        document.getElementById('editVerificationStatus').value = data.verificationStatus || '';
+                    }
+                })
+                .catch(error => console.error('Error loading profile:', error));
+        }
+        
+        function toggleEditMode() {
+            const viewMode = document.getElementById('profileView');
+            const editMode = document.getElementById('profileEdit');
+            const viewButtons = document.getElementById('viewButtons');
+            const editButtons = document.getElementById('editButtons');
+            
+            if (viewMode && editMode && viewButtons && editButtons) {
+                if (editMode.style.display === 'block') {
+                    // Switch to view mode
+                    viewMode.style.display = 'block';
+                    editMode.style.display = 'none';
+                    viewButtons.style.display = 'block';
+                    editButtons.style.display = 'none';
+                } else {
+                    // Switch to edit mode
+                    viewMode.style.display = 'none';
+                    editMode.style.display = 'block';
+                    viewButtons.style.display = 'none';
+                    editButtons.style.display = 'block';
+                }
+            }
+        }
+        
+        function saveProfile() {
+            const form = document.getElementById('profileForm');
+            if (!form.checkValidity()) {
+                form.classList.add('was-validated');
+                return;
+            }
+            
+            const formData = new FormData(form);
+            const saveBtn = document.querySelector('#editButtons .btn-success');
+            const originalText = saveBtn.innerHTML;
+            saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+            saveBtn.disabled = true;
+            
+            fetch('updateNGOProfile.jsp', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'SUCCESS') {
+                    alert('Profile updated successfully!');
+                    toggleEditMode();
+                    loadProfileData();
+                    
+                    // Update session organization name if changed
+                    if (data.organizationName) {
+                        location.reload();
+                    }
+                } else {
+                    alert('Error updating profile: ' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error updating profile. Please try again.');
+            })
+            .finally(() => {
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+            });
+        }
+        
+        // Notification functions
+        function viewFoodDetails(foodListingId) {
+            const notificationsModal = bootstrap.Modal.getInstance(document.getElementById('notificationsModal'));
+            if (notificationsModal) {
+                notificationsModal.hide();
+            }
+            
+            fetch('getFoodDetails.jsp?id=' + foodListingId)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'SUCCESS') {
+                        showFoodDetailsModal(data);
+                    } else {
+                        alert('Error loading food details');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error loading food details');
+                });
+        }
+        
+        function showFoodDetailsModal(foodData) {
+            const modalContent = `
+                <div class="modal fade" id="foodDetailsModal" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header bg-success text-white">
+                                <h5 class="modal-title">
+                                    <i class="fas fa-utensils me-2"></i>${foodData.foodName}
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6 class="text-success mb-3">Food Information</h6>
+                                        <p><strong>Food Name:</strong> ${foodData.foodName}</p>
+                                        <p><strong>Type:</strong> ${foodData.foodType}</p>
+                                        <p><strong>Quantity:</strong> ${foodData.quantity} ${foodData.quantityUnit}</p>
+                                        <p><strong>Expiry Date:</strong> ${foodData.expiryDate}</p>
+                                        <p><strong>Description:</strong> ${foodData.description || 'Not provided'}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6 class="text-success mb-3">Donor & Pickup Details</h6>
+                                        <p><strong>Donor:</strong> ${foodData.donorName}</p>
+                                        <p><strong>Pickup Address:</strong> ${foodData.pickupAddress}</p>
+                                        <p><strong>City:</strong> ${foodData.pickupCity}, ${foodData.pickupState}</p>
+                                        <p><strong>ZIP Code:</strong> ${foodData.pickupZipCode}</p>
+                                        <p><strong>Instructions:</strong> ${foodData.pickupInstructions || 'None'}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                <button type="button" class="btn btn-success" onclick="requestFood(${foodData.id})">
+                                    <i class="fas fa-hand-holding-heart me-2"></i>Request This Food
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            const existingModal = document.getElementById('foodDetailsModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            document.body.insertAdjacentHTML('beforeend', modalContent);
+            const modal = new bootstrap.Modal(document.getElementById('foodDetailsModal'));
+            modal.show();
+        }
+        
+        function markAsRead(notificationId) {
+            fetch('markNotificationRead.jsp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'notificationId=' + notificationId
+            })
+            .then(response => response.text())
+            .then(data => {
+                if (data.includes('SUCCESS')) {
+                    location.reload();
+                } else {
+                    alert('Error marking notification as read');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error marking notification as read');
+            });
+        }
+        
+        function markAllAsRead() {
+            fetch('markAllNotificationsRead.jsp', {
+                method: 'POST'
+            })
+            .then(response => response.text())
+            .then(data => {
+                if (data.includes('SUCCESS')) {
+                    location.reload();
+                } else {
+                    alert('Error marking all notifications as read');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error marking all notifications as read');
+            });
+        }
     </script>
 </body>
 </html>

@@ -152,4 +152,45 @@ public class NGODetailsDAO {
         }
         return details;
     }
+    
+    public static boolean updateNGODetailsByUserId(NGODetailsBean ngo) {
+        try {
+            Class.forName(dclass);
+            try (Connection con = DriverManager.getConnection(url, username, password)) {
+                // First check if NGO details exist for this user
+                PreparedStatement checkPs = con.prepareStatement("SELECT id FROM ngo_details WHERE user_id=?");
+                checkPs.setInt(1, ngo.getUserId());
+                ResultSet rs = checkPs.executeQuery();
+                
+                if (rs.next()) {
+                    // Update existing record
+                    PreparedStatement updatePs = con.prepareStatement(
+                        "UPDATE ngo_details SET registration_number=?, mission=?, contact_person=?, contact_title=?, website=?, service_area=? WHERE user_id=?");
+                    updatePs.setString(1, ngo.getRegistrationNumber());
+                    updatePs.setString(2, ngo.getMission());
+                    updatePs.setString(3, ngo.getContactPerson());
+                    updatePs.setString(4, ngo.getContactTitle());
+                    updatePs.setString(5, ngo.getWebsite());
+                    updatePs.setString(6, ngo.getServiceArea());
+                    updatePs.setInt(7, ngo.getUserId());
+                    return updatePs.executeUpdate() > 0;
+                } else {
+                    // Insert new record
+                    PreparedStatement insertPs = con.prepareStatement(
+                        "INSERT INTO ngo_details (user_id, registration_number, mission, contact_person, contact_title, website, service_area) VALUES (?, ?, ?, ?, ?, ?, ?)");
+                    insertPs.setInt(1, ngo.getUserId());
+                    insertPs.setString(2, ngo.getRegistrationNumber());
+                    insertPs.setString(3, ngo.getMission());
+                    insertPs.setString(4, ngo.getContactPerson());
+                    insertPs.setString(5, ngo.getContactTitle());
+                    insertPs.setString(6, ngo.getWebsite());
+                    insertPs.setString(7, ngo.getServiceArea());
+                    return insertPs.executeUpdate() > 0;
+                }
+            }
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }
