@@ -22,7 +22,7 @@ public class FoodListingDAO {
             con = DriverManager.getConnection(url, username, password);
             
             String sql = "INSERT INTO food_listings(donorId, foodName, description, quantity, quantityUnit, foodType, expiryDate, pickupAddress, pickupCity, pickupState, pickupZipCode, pickupInstructions, status, imageUrl, storageCondition, allergenInfo, specialNotes, latitude, longitude, createdAt, updatedAt, isActive) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,NOW(),NOW(),?)";
-            ps = con.prepareStatement(sql);
+            ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
             ps.setInt(1, flb.getDonorId());
             ps.setString(2, flb.getFoodName());
             ps.setString(3, flb.getDescription());
@@ -44,7 +44,13 @@ public class FoodListingDAO {
             ps.setDouble(19, flb.getLongitude());
             ps.setBoolean(20, flb.isActive());
             
-            status = ps.executeUpdate();
+            int rowsAffected = ps.executeUpdate();
+            if (rowsAffected > 0) {
+                ResultSet generatedKeys = ps.getGeneratedKeys();
+                if (generatedKeys.next()) {
+                    status = generatedKeys.getInt(1);
+                }
+            }
             
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
@@ -69,7 +75,7 @@ public class FoodListingDAO {
             Class.forName(dclass);
             con = DriverManager.getConnection(url, username, password);
             System.out.println("DEBUG: Connected to DB in FoodListingDAO.getAllFoodListings()");
-            String sql = "SELECT fl.*, u.name as donorName, u.city as donorCity FROM food_listings fl JOIN users u ON fl.donorId = u.id WHERE fl.isActive=1 AND fl.status='available' ORDER BY fl.createdAt DESC";
+            String sql = "SELECT fl.*, u.name as donorName, u.fulladdress as donorCity FROM food_listings fl JOIN users u ON fl.donorId = u.id WHERE fl.isActive=1 AND fl.status='available' ORDER BY fl.createdAt DESC";
             ps = con.prepareStatement(sql);
             rs = ps.executeQuery();
             int debugCount = 0;
@@ -90,6 +96,11 @@ public class FoodListingDAO {
                 listing.setPickupInstructions(rs.getString("pickupInstructions"));
                 listing.setStatus(rs.getString("status"));
                 listing.setImageUrl(rs.getString("imageUrl"));
+                listing.setStorageCondition(rs.getString("storageCondition"));
+                listing.setAllergenInfo(rs.getString("allergenInfo"));
+                listing.setSpecialNotes(rs.getString("specialNotes"));
+                listing.setLatitude(rs.getDouble("latitude"));
+                listing.setLongitude(rs.getDouble("longitude"));
                 listing.setCreatedAt(rs.getTimestamp("createdAt"));
                 listing.setUpdatedAt(rs.getTimestamp("updatedAt"));
                 listing.setActive(rs.getBoolean("isActive"));

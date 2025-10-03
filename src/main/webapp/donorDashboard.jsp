@@ -5,6 +5,8 @@
 <%@ page import="com.net.DAO.FoodListingDAO" %>
 <%@ page import="com.net.DAO.FoodRequestDAO" %>
 <%@ page import="com.net.DAO.UserDAO" %>
+<%@ page import="com.net.DAO.NotificationDAO" %>
+<%@ page import="com.net.bean.NotificationBean" %>
 <%@ page import="java.util.*" %>
 <%
 // Check if user is logged in and is a donor
@@ -24,6 +26,10 @@ int donorId = Integer.parseInt(userId);
 List<FoodListingBean> myListings = FoodListingDAO.getFoodListingsByDonor(donorId);
 List<FoodRequestBean> myRequests = FoodRequestDAO.getFoodRequestsForDonor(donorId);
 UserBean donorProfile = UserDAO.getUserById(donorId);
+
+// Get notifications for this donor (stored with donor ID as ngo_id)
+List<NotificationBean> notifications = NotificationDAO.getNotificationsByNGO(donorId);
+int unreadCount = NotificationDAO.getUnreadCount(donorId);
 
 int activeListings = myListings != null ? myListings.size() : 0;
 int totalRequests = myRequests != null ? myRequests.size() : 0;
@@ -441,6 +447,14 @@ int totalRequests = myRequests != null ? myRequests.size() : 0;
                 <div class="search-container me-3">
                     <input type="text" id="search-input" class="form-control form-control-sm" placeholder="Search listings..." style="width: 200px;">
                 </div>
+                <a class="nav-link position-relative me-3" href="#" data-bs-toggle="modal" data-bs-target="#notificationsModal">
+                    <i class="fas fa-bell"></i>
+                    <% if (unreadCount > 0) { %>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            <%= unreadCount %>
+                        </span>
+                    <% } %>
+                </a>
                 <button class="btn btn-outline-light btn-sm me-3" onclick="dashboard.toggleTheme()" title="Toggle Theme">
                     <i class="fas fa-moon"></i>
                 </button>
@@ -1035,6 +1049,72 @@ int totalRequests = myRequests != null ? myRequests.size() : 0;
                         <button type="button" class="btn btn-success" onclick="saveProfile()">Save Changes</button>
                         <button type="button" class="btn btn-secondary" onclick="toggleEditMode()">Cancel</button>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Modal -->
+    <div class="modal fade" id="notificationsModal" tabindex="-1" aria-labelledby="notificationsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="notificationsModalLabel">
+                        <i class="fas fa-bell me-2"></i>Food Request Notifications
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="max-height: 500px; overflow-y: auto;">
+                    <% if (notifications != null && !notifications.isEmpty()) { %>
+                        <% for (NotificationBean notification : notifications) { %>
+                            <div class="card mb-3 <%= !notification.isRead() ? "border-success" : "" %>">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <h6 class="card-title mb-2">
+                                                <i class="fas fa-handshake text-success me-2"></i>
+                                                Food Request
+                                                <% if (!notification.isRead()) { %>
+                                                    <span class="badge bg-success ms-2">New</span>
+                                                <% } %>
+                                            </h6>
+                                            <p class="card-text mb-2">
+                                                <strong>Message:</strong> <%= notification.getMessage() %>
+                                            </p>
+                                            <small class="text-muted">
+                                                <i class="fas fa-clock me-1"></i>
+                                                <%= notification.getCreatedAt() %>
+                                            </small>
+                                        </div>
+                                        <div class="ms-3">
+                                            <% if (notification.getFoodListingId() > 0) { %>
+                                                <button class="btn btn-sm btn-outline-success" onclick="viewFoodRequest(<%= notification.getFoodListingId() %>)">
+                                                    <i class="fas fa-eye me-1"></i>View Request
+                                                </button>
+                                            <% } %>
+                                            <% if (!notification.isRead()) { %>
+                                                <button class="btn btn-sm btn-outline-secondary mt-1" onclick="markAsRead(<%= notification.getId() %>)">
+                                                    <i class="fas fa-check me-1"></i>Mark Read
+                                                </button>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <% } %>
+                    <% } else { %>
+                        <div class="text-center py-4">
+                            <i class="fas fa-bell-slash fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No notifications yet</h5>
+                            <p class="text-muted">You'll receive notifications when NGOs request your food items.</p>
+                        </div>
+                    <% } %>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <% if (unreadCount > 0) { %>
+                        <button type="button" class="btn btn-success" onclick="markAllAsRead()">Mark All as Read</button>
+                    <% } %>
                 </div>
             </div>
         </div>
@@ -2414,6 +2494,51 @@ int totalRequests = myRequests != null ? myRequests.size() : 0;
                     return new bootstrap.Tooltip(tooltipTriggerEl);
                 });
             }
+        }
+
+        // Notification functions for donors
+        function viewFoodRequest(foodListingId) {
+            window.location.href = 'viewFoodListing.jsp?id=' + foodListingId;
+        }
+        
+        function markAsRead(notificationId) {
+            fetch('markNotificationRead.jsp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: 'notificationId=' + notificationId
+            })
+            .then(response => response.text())
+            .then(data => {
+                if (data.includes('SUCCESS')) {
+                    location.reload();
+                } else {
+                    alert('Error marking notification as read');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error marking notification as read');
+            });
+        }
+        
+        function markAllAsRead() {
+            fetch('markAllNotificationsRead.jsp', {
+                method: 'POST'
+            })
+            .then(response => response.text())
+            .then(data => {
+                if (data.includes('SUCCESS')) {
+                    location.reload();
+                } else {
+                    alert('Error marking all notifications as read');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error marking all notifications as read');
+            });
         }
 
         // Initialize dashboard when page loads

@@ -423,7 +423,7 @@ if (userType == null || !"donor".equals(userType) || userId == null) {
                             streetNumber = component.long_name;
                         } else if (types.includes('route')) {
                             route = component.long_name;
-                        } else if (types.includes('locality')) {
+                        } else if (types.includes('locality') || types.includes('sublocality')) {
                             city = component.long_name;
                         } else if (types.includes('administrative_area_level_1')) {
                             state = component.short_name;
@@ -432,11 +432,12 @@ if (userType == null || !"donor".equals(userType) || userId == null) {
                         }
                     }
                     
-                    // Update form fields
-                    document.getElementById('pickupAddress').value = streetNumber + ' ' + route;
-                    document.getElementById('pickupCity').value = city;
-                    document.getElementById('pickupState').value = state;
-                    document.getElementById('pickupZipCode').value = zipCode;
+                    // Update form fields with fallback values
+                    const fullAddress = (streetNumber + ' ' + route).trim() || results[0].formatted_address.split(',')[0];
+                    document.getElementById('pickupAddress').value = fullAddress;
+                    document.getElementById('pickupCity').value = city || 'Unknown City';
+                    document.getElementById('pickupState').value = state || 'Unknown State';
+                    document.getElementById('pickupZipCode').value = zipCode || '00000';
                 }
             });
         }
@@ -483,7 +484,7 @@ if (userType == null || !"donor".equals(userType) || userId == null) {
                                         streetNumber = component.long_name;
                                     } else if (types.includes('route')) {
                                         route = component.long_name;
-                                    } else if (types.includes('locality')) {
+                                    } else if (types.includes('locality') || types.includes('sublocality')) {
                                         city = component.long_name;
                                     } else if (types.includes('administrative_area_level_1')) {
                                         state = component.short_name;
@@ -492,11 +493,14 @@ if (userType == null || !"donor".equals(userType) || userId == null) {
                                     }
                                 }
                                 
-                                // Update form fields
-                                document.getElementById('pickupAddress').value = streetNumber + ' ' + route;
-                                document.getElementById('pickupCity').value = city;
-                                document.getElementById('pickupState').value = state;
-                                document.getElementById('pickupZipCode').value = zipCode;
+                                // Update form fields with fallback values
+                                const fullAddress = (streetNumber + ' ' + route).trim() || results[0].formatted_address.split(',')[0];
+                                document.getElementById('pickupAddress').value = fullAddress;
+                                document.getElementById('pickupCity').value = city || 'Unknown City';
+                                document.getElementById('pickupState').value = state || 'Unknown State';
+                                document.getElementById('pickupZipCode').value = zipCode || '00000';
+                                
+                                console.log('Address filled:', { fullAddress, city, state, zipCode });
                             }
                         });
                         
