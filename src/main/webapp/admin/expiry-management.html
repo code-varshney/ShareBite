@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Expiry Management - ShareBite Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .admin-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            margin: 2rem auto;
+            max-width: 800px;
+            padding: 2rem;
+        }
+        .status-card {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
+        }
+        .btn-admin {
+            background: linear-gradient(135deg, #007bff, #6610f2);
+            border: none;
+            border-radius: 10px;
+            padding: 0.8rem 2rem;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-admin:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 123, 255, 0.4);
+            color: white;
+        }
+        .log-area {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 1rem;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="admin-container">
+            <div class="text-center mb-4">
+                <h2><i class="fas fa-cogs me-2"></i>Food Expiry Management</h2>
+                <p class="text-muted">Manage automatic expiry checking for food listings</p>
+            </div>
+
+            <div class="status-card">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h5><i class="fas fa-clock me-2"></i>Automatic Expiry Checking</h5>
+                        <p class="mb-0">System automatically marks expired food as "Not Available"</p>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <span class="badge bg-light text-dark fs-6">Active</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-sync-alt fa-3x text-primary mb-3"></i>
+                            <h5>Manual Check</h5>
+                            <p class="text-muted">Run expiry check immediately</p>
+                            <button class="btn btn-admin" onclick="runManualCheck()">
+                                <i class="fas fa-play me-2"></i>Run Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-calendar-check fa-3x text-success mb-3"></i>
+                            <h5>Scheduled Tasks</h5>
+                            <p class="text-muted">View scheduled maintenance</p>
+                            <button class="btn btn-admin" onclick="runScheduledTasks()">
+                                <i class="fas fa-tasks me-2"></i>Run Tasks
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="fas fa-list me-2"></i>Activity Log</h5>
+                </div>
+                <div class="card-body">
+                    <div id="logArea" class="log-area">
+                        <div class="text-muted">Click "Run Now" or "Run Tasks" to see activity logs...</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-4">
+                <h5><i class="fas fa-info-circle me-2"></i>Setup Instructions</h5>
+                <div class="alert alert-info">
+                    <h6>For Automatic Scheduling:</h6>
+                    <ol>
+                        <li><strong>Cron Job (Linux/Mac):</strong> Add to crontab: <code>0 */6 * * * curl -s http://localhost:8080/ShareBite/scheduledTasks.jsp</code></li>
+                        <li><strong>Windows Task Scheduler:</strong> Create task to call: <code>http://localhost:8080/ShareBite/scheduledTasks.jsp</code></li>
+                        <li><strong>Application Server:</strong> Configure scheduler in web.xml or use @Scheduled annotation</li>
+                    </ol>
+                    <p class="mb-0"><strong>Recommended:</strong> Run every 6 hours to keep food listings up to date.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function addLog(message, type = 'info') {
+            const logArea = document.getElementById('logArea');
+            const timestamp = new Date().toLocaleString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `mb-1 text-${type === 'error' ? 'danger' : type === 'success' ? 'success' : 'dark'}`;
+            logEntry.innerHTML = `[${timestamp}] ${message}`;
+            
+            if (logArea.children.length === 1 && logArea.children[0].classList.contains('text-muted')) {
+                logArea.innerHTML = '';
+            }
+            
+            logArea.appendChild(logEntry);
+            logArea.scrollTop = logArea.scrollHeight;
+        }
+
+        function runManualCheck() {
+            addLog('Starting manual expiry check...', 'info');
+            
+            fetch('../updateExpiredListings.jsp')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        addLog(`✓ Manual check completed: ${data.updatedCount} listings updated`, 'success');
+                    } else {
+                        addLog(`✗ Manual check failed: ${data.message}`, 'error');
+                    }
+                })
+                .catch(error => {
+                    addLog(`✗ Error during manual check: ${error.message}`, 'error');
+                });
+        }
+
+        function runScheduledTasks() {
+            addLog('Running scheduled maintenance tasks...', 'info');
+            
+            fetch('../scheduledTasks.jsp')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        addLog(`✓ Scheduled tasks completed: ${data.updatedCount} listings updated`, 'success');
+                        addLog(`Timestamp: ${data.timestamp}`, 'info');
+                    } else {
+                        addLog(`✗ Scheduled tasks failed: ${data.message}`, 'error');
+                    }
+                })
+                .catch(error => {
+                    addLog(`✗ Error during scheduled tasks: ${error.message}`, 'error');
+                });
+        }
+    </script>
+</body>
+</html>

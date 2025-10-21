@@ -350,7 +350,7 @@ public class FoodRequestDAO {
         try {
             Class.forName(dclass);
             con = DriverManager.getConnection(url, username, password);
-            String sql = "SELECT fr.*, n.name as ngoName FROM food_requests fr JOIN ngos n ON fr.ngoId = n.id WHERE fr.foodListingId=? AND fr.isActive=1 ORDER BY fr.createdAt DESC";
+            String sql = "SELECT fr.*, u.name as ngoName, u.organizationName FROM food_requests fr JOIN users u ON fr.ngoId = u.id WHERE fr.foodListingId=? AND fr.isActive=1 ORDER BY fr.createdAt DESC";
             ps = con.prepareStatement(sql);
             ps.setInt(1, foodId);
             rs = ps.executeQuery();

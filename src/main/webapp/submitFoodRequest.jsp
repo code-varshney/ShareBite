@@ -47,6 +47,7 @@ try {
     foodRequest.setPickupTime(pickupTime != null ? pickupTime.trim() : "");
     foodRequest.setRequestMessage(requestMessage != null ? requestMessage.trim() : "");
     foodRequest.setStatus("pending");
+    foodRequest.setActive(true);
     
     // Submit the request
     int result = FoodRequestDAO.createFoodRequest(foodRequest);

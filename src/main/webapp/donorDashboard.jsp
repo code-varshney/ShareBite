@@ -43,52 +43,131 @@ int totalRequests = myRequests != null ? myRequests.size() : 0;
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/welcomePopup.css">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
             font-family: 'Poppins', sans-serif;
-            background: #f8f9fa;
+            background: linear-gradient(-45deg, #e8f5e8, #f0f8f0, #e6f7e6, #f5fbf5);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
         
         .navbar {
             background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(40, 167, 69, 0.3);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
         
         .sidebar {
-            background: #ffffff;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.1);
             min-height: calc(100vh - 76px);
+            border-radius: 0 20px 20px 0;
+            border-right: 1px solid rgba(40, 167, 69, 0.1);
         }
         
         .sidebar .nav-link {
             color: #6c757d;
-            padding: 1rem 1.5rem;
-            border-left: 3px solid transparent;
-            transition: all 0.3s ease;
+            padding: 1.2rem 1.5rem;
+            border-radius: 15px;
+            margin: 0.3rem 1rem;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .sidebar .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(40, 167, 69, 0.1), transparent);
+            transition: left 0.5s;
+        }
+        
+        .sidebar .nav-link:hover::before {
+            left: 100%;
         }
         
         .sidebar .nav-link:hover,
         .sidebar .nav-link.active {
-            background: #f8f9fa;
-            color: #28a745;
-            border-left-color: #28a745;
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            transform: translateX(5px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
         }
         
         .main-content {
-            padding: 2rem;
-            background: #ffffff;
-            border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            margin: 1rem;
+            padding: 2.5rem;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            margin: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: slideUp 0.6s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .stats-card {
             background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
             color: white;
-            border-radius: 15px;
-            padding: 1.5rem;
+            border-radius: 20px;
+            padding: 2rem;
             margin-bottom: 1.5rem;
-            box-shadow: 0 4px 20px rgba(40, 167, 69, 0.3);
+            box-shadow: 0 10px 30px rgba(40, 167, 69, 0.3);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stats-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+            transform: translateX(-100%);
+            animation: shimmer 3s infinite;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 20px 50px rgba(40, 167, 69, 0.4);
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
         }
         
         .stats-number {
@@ -98,28 +177,64 @@ int totalRequests = myRequests != null ? myRequests.size() : 0;
         }
         
         .food-card {
-            background: #ffffff;
-            border-radius: 15px;
-            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2rem;
             margin-bottom: 1.5rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            border: 1px solid #e9ecef;
-            transition: transform 0.3s ease;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(40, 167, 69, 0.1);
+            border-left: 4px solid #28a745;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .food-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent, rgba(40, 167, 69, 0.05), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
         
         .food-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 50px rgba(40, 167, 69, 0.2);
+            border-left-color: #20c997;
+        }
+        
+        .food-card:hover::before {
+            opacity: 1;
         }
         
         .welcome-section {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #28a745 0%, #20c997 50%, #17a2b8 100%);
             color: white;
-            border-radius: 15px;
-            padding: 2rem;
+            border-radius: 25px;
+            padding: 3rem;
             margin-bottom: 2rem;
             text-align: center;
             position: relative;
             overflow: hidden;
+            box-shadow: 0 15px 40px rgba(40, 167, 69, 0.3);
+        }
+        
+        .welcome-section h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .welcome-section p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
         }
         
         .welcome-section::before {
@@ -272,6 +387,48 @@ int totalRequests = myRequests != null ? myRequests.size() : 0;
         }
         
         /* Responsive Enhancements */
+        /* Enhanced Modal and Form Styling */
+        .modal-content {
+            border-radius: 25px;
+            border: none;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.95);
+            overflow: hidden;
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border-radius: 25px 25px 0 0;
+            padding: 1.5rem 2rem;
+            border: none;
+            position: relative;
+        }
+        
+        .modal-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+            transform: translateX(-100%);
+            animation: shimmer 3s infinite;
+        }
+        
+        .modal-body {
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .modal-footer {
+            padding: 1.5rem 2rem;
+            border: none;
+            background: rgba(248, 249, 250, 0.9);
+        }
+        
         @media (max-width: 768px) {
             .search-container input {
                 width: 150px !important;
@@ -283,6 +440,15 @@ int totalRequests = myRequests != null ? myRequests.size() : 0;
             
             .stats-card {
                 margin-bottom: 1rem;
+            }
+            
+            .welcome-section h2 {
+                font-size: 2rem;
+            }
+            
+            .main-content {
+                padding: 1.5rem;
+                margin: 1rem;
             }
         }
         
@@ -1121,6 +1287,7 @@ int totalRequests = myRequests != null ? myRequests.size() : 0;
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/welcomePopup.js"></script>
     <script>
         function toggleEditMode() {
             const viewMode = document.getElementById('profileView');
@@ -2060,6 +2227,32 @@ int totalRequests = myRequests != null ? myRequests.size() : 0;
                         this.updateStatistics();
                     }
                 }, 30000);
+                
+                // Check for expired listings every 5 minutes
+                setInterval(() => {
+                    this.checkExpiredListings();
+                }, 300000);
+            }
+            
+            checkExpiredListings() {
+                fetch('updateExpiredListings.jsp', {
+                    method: 'GET'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.updatedCount > 0) {
+                        this.showNotification(`${data.updatedCount} expired listing(s) updated to "Not Available"`, 'warning');
+                        // Refresh current section if viewing listings
+                        if (this.currentSection === 'my-listings') {
+                            setTimeout(() => {
+                                location.reload();
+                            }, 2000);
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error checking expired listings:', error);
+                });
             }
 
             viewFoodDetails(foodId) {
@@ -2545,6 +2738,12 @@ int totalRequests = myRequests != null ? myRequests.size() : 0;
         let dashboard;
         document.addEventListener('DOMContentLoaded', () => {
             dashboard = new DonorDashboard();
+            
+            // Check for expired listings on page load
+            dashboard.checkExpiredListings();
+            
+            // Show welcome popup for new login
+            showWelcomePopup('donor', '<%= userName != null ? userName : "Donor" %>');
             
             // Show Food Listings Dashboard by default
             dashboard.showSection('my-listings');

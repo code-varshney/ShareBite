@@ -75,7 +75,7 @@ public class FoodListingDAO {
             Class.forName(dclass);
             con = DriverManager.getConnection(url, username, password);
             System.out.println("DEBUG: Connected to DB in FoodListingDAO.getAllFoodListings()");
-            String sql = "SELECT fl.*, u.name as donorName, u.fulladdress as donorCity FROM food_listings fl JOIN users u ON fl.donorId = u.id WHERE fl.isActive=1 AND fl.status='available' ORDER BY fl.createdAt DESC";
+            String sql = "SELECT fl.*, u.name as donorName, u.fulladdress as donorCity FROM food_listings fl JOIN users u ON fl.donorId = u.id WHERE fl.isActive=1 AND fl.status='Available' AND fl.expiryDate >= CURDATE() ORDER BY fl.createdAt DESC";
             ps = con.prepareStatement(sql);
             rs = ps.executeQuery();
             int debugCount = 0;
@@ -236,7 +236,7 @@ public class FoodListingDAO {
             Class.forName(dclass);
             con = DriverManager.getConnection(url, username, password);
             
-            StringBuilder sql = new StringBuilder("SELECT fl.*, u.name as donorName, u.city as donorCity FROM food_listings fl JOIN users u ON fl.donorId = u.id WHERE fl.isActive=1 AND fl.status='available'");
+            StringBuilder sql = new StringBuilder("SELECT fl.*, u.name as donorName, u.city as donorCity FROM food_listings fl JOIN users u ON fl.donorId = u.id WHERE fl.isActive=1 AND fl.status='Available' AND fl.expiryDate >= CURDATE()");
             
             if (city != null && !city.trim().isEmpty()) {
                 sql.append(" AND fl.pickupCity LIKE ?");
@@ -449,5 +449,31 @@ public class FoodListingDAO {
             }
         }
         return listings;
+    }
+    
+    public static int updateExpiredFoodListings() {
+        Connection con = null;
+        PreparedStatement ps = null;
+        int updatedCount = 0;
+        
+        try {
+            Class.forName(dclass);
+            con = DriverManager.getConnection(url, username, password);
+            
+            String sql = "UPDATE food_listings SET status='Expired', updatedAt=NOW() WHERE isActive=1 AND status IN ('Available', 'Reserved') AND expiryDate < CURDATE()";
+            ps = con.prepareStatement(sql);
+            updatedCount = ps.executeUpdate();
+            
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (ps != null) ps.close();
+                if (con != null) con.close();
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+        return updatedCount;
     }
 }

@@ -290,5 +290,36 @@ public class UserDAO {
         }
         return user;
     }
+    
+    public static List<UserBean> getPendingVerificationUsers() {
+        List<UserBean> users = new ArrayList<>();
+        try {
+            Class.forName(dclass);
+            try (Connection con = DriverManager.getConnection(url, username, password);
+                 PreparedStatement ps = con.prepareStatement("SELECT * FROM users WHERE verificationStatus='pending' AND isActive=1 ORDER BY createdAt DESC")) {
+                try (ResultSet rs = ps.executeQuery()) {
+                    while (rs.next()) {
+                        UserBean user = new UserBean();
+                        user.setId(rs.getInt("id"));
+                        user.setName(rs.getString("name"));
+                        user.setEmail(rs.getString("email"));
+                        user.setPhone(rs.getString("phone"));
+                        user.setUserType(rs.getString("role"));
+                        user.setOrganizationName(rs.getString("organizationName"));
+                        user.setFullAddress(rs.getString("fulladdress"));
+                        user.setVerificationStatus(rs.getString("verificationStatus"));
+                        user.setActive(rs.getBoolean("isActive"));
+                        user.setOrganizationType(rs.getString("organizationType"));
+                        user.setCreatedAt(rs.getString("createdAt"));
+                        users.add(user);
+                    }
+                }
+            }
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+        }
+        return users;
+    }
 }
+
 

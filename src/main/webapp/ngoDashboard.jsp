@@ -47,35 +47,82 @@ int unreadCount = NotificationDAO.getUnreadCount(ngoId);
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/welcomePopup.css">
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
         body {
             font-family: 'Poppins', sans-serif;
-            background: #f8f9fa;
+            background: linear-gradient(-45deg, #e3f2fd, #f0f8ff, #e1f5fe, #f3e5f5);
+            background-size: 400% 400%;
+            animation: gradientShift 15s ease infinite;
+            min-height: 100vh;
+        }
+        
+        @keyframes gradientShift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
         
         .navbar {
             background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(0, 123, 255, 0.3);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
         }
         
         .sidebar {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
             min-height: calc(100vh - 76px);
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.1);
             padding: 0;
+            border-radius: 0 20px 20px 0;
+            border-right: 1px solid rgba(0, 123, 255, 0.1);
         }
         
         .sidebar .nav-link {
             color: #6c757d;
-            padding: 1rem 1.5rem;
-            border-radius: 0;
-            transition: all 0.3s ease;
+            padding: 1.2rem 1.5rem;
+            border-radius: 15px;
+            margin: 0.3rem 1rem;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .sidebar .nav-link::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 123, 255, 0.1), transparent);
+            transition: left 0.5s;
+        }
+        
+        .sidebar .nav-link:hover::before {
+            left: 100%;
         }
         
         .sidebar .nav-link:hover,
         .sidebar .nav-link.active {
-            background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
+            background: linear-gradient(135deg, #007bff, #6610f2);
             color: white;
+            transform: translateX(5px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(0, 123, 255, 0.3);
         }
         
         .sidebar .nav-link i {
@@ -84,92 +131,466 @@ int unreadCount = NotificationDAO.getUnreadCount(ngoId);
         }
         
         .main-content {
-            padding: 2rem;
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
-            margin: 1rem;
+            padding: 2.5rem;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            margin: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            animation: slideUp 0.6s ease-out;
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .welcome-section {
-            background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
+            background: linear-gradient(135deg, #007bff 0%, #6610f2 50%, #17a2b8 100%);
             color: white;
-            padding: 2rem;
-            border-radius: 15px;
+            padding: 3rem;
+            border-radius: 25px;
             margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 15px 40px rgba(0, 123, 255, 0.3);
+        }
+        
+        .welcome-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+            transform: translateX(-100%);
+            animation: shimmer 4s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .welcome-section h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            text-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .welcome-section p {
+            font-size: 1.2rem;
+            opacity: 0.9;
         }
         
         .stats-card {
-            background: white;
-            border-radius: 15px;
-            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2rem;
             text-align: center;
-            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 123, 255, 0.2);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid rgba(0, 123, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stats-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent, rgba(0, 123, 255, 0.05), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
         
         .stats-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 20px 50px rgba(0, 123, 255, 0.3);
+        }
+        
+        .stats-card:hover::before {
+            opacity: 1;
         }
         
         .stats-number {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #007bff;
+            font-size: 3rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #007bff, #6610f2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
             margin-bottom: 0.5rem;
+            text-shadow: 0 4px 8px rgba(0, 123, 255, 0.2);
         }
         
         .food-card {
-            background: white;
-            border-radius: 15px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 123, 255, 0.1);
             border-left: 4px solid #007bff;
-            transition: transform 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .food-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent, rgba(0, 123, 255, 0.05), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
         
         .food-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 25px rgba(0,0,0,0.15);
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 50px rgba(0, 123, 255, 0.2);
+            border-left-color: #6610f2;
+        }
+        
+        .food-card:hover::before {
+            opacity: 1;
         }
         
         .request-card {
-            background: white;
-            border-radius: 15px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.1);
-            border-left: 4px solid #28a745;
-        }
-        
-        .btn-request {
-            background: linear-gradient(45deg, #007bff, #6610f2);
-            border: none;
-            border-radius: 25px;
-            padding: 0.5rem 1.5rem;
-            color: white;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-request:hover {
-            background: linear-gradient(45deg, #0056b3, #520dc2);
-            transform: translateY(-2px);
-            color: white;
-        }
-        
-        .status-badge {
-            padding: 0.25rem 0.75rem;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
             border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 500;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(40, 167, 69, 0.1);
+            border-left: 4px solid #28a745;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         
-        .status-pending { background: #fff3cd; color: #856404; }
-        .status-approved { background: #d4edda; color: #155724; }
-        .status-rejected { background: #f8d7da; color: #721c24; }
-        .status-completed { background: #cce5ff; color: #004085; }
+        .request-card:hover {
+            transform: translateY(-5px) scale(1.01);
+            box-shadow: 0 15px 40px rgba(40, 167, 69, 0.2);
+        }
+        
+        .btn-request, .btn-primary {
+            background: linear-gradient(135deg, #007bff, #6610f2);
+            border: none;
+            border-radius: 15px;
+            padding: 0.8rem 2rem;
+            color: white;
+            font-weight: 600;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-request::before, .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn-request:hover::before, .btn-primary:hover::before {
+            left: 100%;
+        }
+        
+        .btn-request:hover, .btn-primary:hover {
+            background: linear-gradient(135deg, #6610f2, #17a2b8);
+            transform: translateY(-3px) scale(1.05);
+            box-shadow: 0 10px 30px rgba(0, 123, 255, 0.4);
+            color: white;
+        }
+        
+        .status-badge, .badge {
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .status-pending { 
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+            color: #000;
+            box-shadow: 0 4px 15px rgba(255, 193, 7, 0.3);
+        }
+        .status-approved { 
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+        .status-rejected { 
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: white;
+            box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
+        }
+        .status-completed { 
+            background: linear-gradient(135deg, #007bff, #6610f2);
+            color: white;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+        }
+        
+        .bg-success {
+            background: linear-gradient(135deg, #28a745, #20c997) !important;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+        }
+        
+        .bg-info {
+            background: linear-gradient(135deg, #17a2b8, #138496) !important;
+            box-shadow: 0 4px 15px rgba(23, 162, 184, 0.3);
+        }
+        
+        .bg-primary {
+            background: linear-gradient(135deg, #007bff, #6610f2) !important;
+            box-shadow: 0 4px 15px rgba(0, 123, 255, 0.3);
+        }
+        
+        /* Enhanced Modal and Form Styling */
+        .modal-content {
+            border-radius: 25px;
+            border: none;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.95);
+            overflow: hidden;
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, #007bff, #6610f2);
+            color: white;
+            border-radius: 25px 25px 0 0;
+            padding: 1.5rem 2rem;
+            border: none;
+            position: relative;
+        }
+        
+        .modal-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.1) 50%, transparent 70%);
+            transform: translateX(-100%);
+            animation: shimmer 3s infinite;
+        }
+        
+        .modal-body {
+            padding: 2rem;
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .modal-footer {
+            padding: 1.5rem 2rem;
+            border: none;
+            background: rgba(248, 249, 250, 0.9);
+        }
+        
+        .form-control, .form-select {
+            border-radius: 12px;
+            border: 2px solid rgba(0, 123, 255, 0.2);
+            padding: 0.8rem 1rem;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.3rem rgba(0, 123, 255, 0.15);
+            background: white;
+            transform: translateY(-2px);
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.8rem;
+        }
+        
+        .table {
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+        }
+        
+        .table th {
+            background: linear-gradient(135deg, #007bff, #6610f2);
+            color: white;
+            font-weight: 700;
+            border: none;
+            padding: 1.5rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .table td {
+            padding: 1.2rem;
+            border-color: rgba(0, 123, 255, 0.1);
+            vertical-align: middle;
+            background: rgba(255, 255, 255, 0.8);
+        }
+        
+        .table tbody tr {
+            transition: all 0.4s ease;
+        }
+        
+        .table tbody tr:hover {
+            background: rgba(0, 123, 255, 0.08);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 123, 255, 0.15);
+        }
+        
+        .table tbody tr:hover td {
+            background: rgba(0, 123, 255, 0.05);
+        }
+        
+        .alert {
+            border-radius: 15px;
+            border: none;
+            backdrop-filter: blur(15px);
+            animation: slideDown 0.6s ease-out;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .alert-success {
+            background: linear-gradient(135deg, rgba(40, 167, 69, 0.9), rgba(32, 201, 151, 0.9));
+            color: white;
+        }
+        
+        .alert-info {
+            background: linear-gradient(135deg, rgba(23, 162, 184, 0.9), rgba(19, 132, 150, 0.9));
+            color: white;
+        }
+        
+        .alert-warning {
+            background: linear-gradient(135deg, rgba(255, 193, 7, 0.9), rgba(253, 126, 20, 0.9));
+            color: #000;
+        }
+        
+        .alert-danger {
+            background: linear-gradient(135deg, rgba(220, 53, 69, 0.9), rgba(200, 35, 51, 0.9));
+            color: white;
+        }
+        
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-30px) scale(0.9); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        
+        /* Enhanced Interactive Elements */
+        .interactive-card {
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        .interactive-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(0, 123, 255, 0.2);
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(0, 123, 255, 0.3);
+            border-top: 3px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .notification-toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 350px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            overflow: hidden;
+            backdrop-filter: blur(20px);
+            animation: slideInRight 0.5s ease-out;
+        }
+        
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        /* Responsive Enhancements */
+        @media (max-width: 768px) {
+            .welcome-section h2 {
+                font-size: 2rem;
+            }
+            
+            .stats-number {
+                font-size: 2.5rem;
+            }
+            
+            .main-content {
+                padding: 1.5rem;
+                margin: 1rem;
+            }
+            
+            .sidebar {
+                border-radius: 0;
+            }
+            
+            .food-card, .request-card {
+                padding: 1.5rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .welcome-section {
+                padding: 2rem 1.5rem;
+            }
+            
+            .stats-card {
+                padding: 1.5rem;
+            }
+            
+            .modal-content {
+                margin: 1rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -224,6 +645,35 @@ int unreadCount = NotificationDAO.getUnreadCount(ngoId);
             <div class="col-md-9 col-lg-10">
                 <!-- Dashboard Section -->
                 <div id="dashboard" class="main-content">
+                    <!-- Success/Error Messages -->
+                    <% 
+                    String successMsg = request.getParameter("success");
+                    String errorMsg = request.getParameter("error");
+                    if (successMsg != null) {
+                    %>
+                        <div class="alert alert-success alert-dismissible fade show" role="alert">
+                            <i class="fas fa-check-circle me-2"></i>
+                            <% if ("request_submitted".equals(successMsg)) { %>
+                                Food request submitted successfully! The donor will be notified.
+                            <% } %>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    <% } %>
+                    <% if (errorMsg != null) { %>
+                        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <% if ("missing_fields".equals(errorMsg)) { %>
+                                Please fill in all required fields.
+                            <% } else if ("food_not_found".equals(errorMsg)) { %>
+                                Food listing not found.
+                            <% } else if ("request_failed".equals(errorMsg)) { %>
+                                Failed to submit request. Please try again.
+                            <% } else { %>
+                                An error occurred. Please try again.
+                            <% } %>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    <% } %>
                     <div class="welcome-section">
                         <h2><i class="fas fa-users me-3"></i>Welcome, <%= organizationName != null ? organizationName : userName %></h2>
                         <p class="mb-0">Manage your food requests and help reduce food waste in your community</p>
@@ -440,7 +890,7 @@ int unreadCount = NotificationDAO.getUnreadCount(ngoId);
                             <div class="request-card">
                                 <div class="row align-items-center">
                                     <div class="col-md-8">
-                                        <h5>Request #<%= request1.getId() %></h5>
+                                        <h5><%= request1.getFoodName() != null ? request1.getFoodName() : "Food Request" %> #<%= request1.getId() %></h5>
                                         <p class="text-muted mb-2">
                                             <strong>Pickup Date:</strong> <%= request1.getPickupDate() %> at <%= request1.getPickupTime() %>
                                         </p>
@@ -773,6 +1223,7 @@ int unreadCount = NotificationDAO.getUnreadCount(ngoId);
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/welcomePopup.js"></script>
     <script>
         function showSection(sectionName) {
             // Hide all sections
@@ -854,6 +1305,12 @@ int unreadCount = NotificationDAO.getUnreadCount(ngoId);
         
         // Set today's date as minimum for pickup date
         document.addEventListener('DOMContentLoaded', function() {
+            // Check for expired listings on page load
+            checkExpiredListings();
+            
+            // Show welcome popup for new login
+            showWelcomePopup('ngo', '<%= organizationName != null ? organizationName : (userName != null ? userName : "NGO") %>');
+            
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('pickupDate').min = today;
             
@@ -865,6 +1322,25 @@ int unreadCount = NotificationDAO.getUnreadCount(ngoId);
                 });
             }
         });
+        
+        function checkExpiredListings() {
+            fetch('updateExpiredListings.jsp', {
+                method: 'GET'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.updatedCount > 0) {
+                    console.log(`${data.updatedCount} expired listing(s) updated`);
+                    // Optionally refresh the page to show updated listings
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1000);
+                }
+            })
+            .catch(error => {
+                console.error('Error checking expired listings:', error);
+            });
+        }
         
         // Profile management functions
         function loadProfileData() {

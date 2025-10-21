@@ -231,6 +231,9 @@ if (allUsers != null) {
                         <a class="nav-link" href="#system" onclick="showSection('system', event)">
                             <i class="fas fa-cogs"></i>System Settings
                         </a>
+                        <a class="nav-link" href="showdata.jsp">
+                            <i class="fas fa-users me-2"></i>Donors & NGO's
+                        </a>
                     </nav>
                 </div>
             </div>
