@@ -1321,6 +1321,11 @@ int unreadCount = NotificationDAO.getUnreadCount(ngoId);
                     loadProfileData();
                 });
             }
+            
+            // Auto-refresh food listings every 30 seconds
+            setInterval(function() {
+                location.reload();
+            }, 30000);
         });
         
         function checkExpiredListings() {
