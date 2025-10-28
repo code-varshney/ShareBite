@@ -476,4 +476,62 @@ public class FoodListingDAO {
         }
         return updatedCount;
     }
+    
+    public static List<FoodListingBean> getFoodListingsWithinRange(double ngoLatitude, double ngoLongitude, double rangeKm) {
+        List<FoodListingBean> listings = new ArrayList<>();
+        try {
+            Class.forName(dclass);
+            Connection con = DriverManager.getConnection(url, username, password);
+            
+            String sql = "SELECT fl.*, u.name as donorName, u.fulladdress as donorCity, " +
+                        "(6371 * acos(cos(radians(?)) * cos(radians(fl.latitude)) * " +
+                        "cos(radians(fl.longitude) - radians(?)) + sin(radians(?)) * " +
+                        "sin(radians(fl.latitude)))) AS distance " +
+                        "FROM food_listings fl JOIN users u ON fl.donorId = u.id " +
+                        "WHERE fl.isActive=1 AND fl.status='Available' AND fl.expiryDate >= CURDATE() " +
+                        "AND fl.latitude != 0 AND fl.longitude != 0 " +
+                        "HAVING distance <= ? ORDER BY distance ASC";
+            
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setDouble(1, ngoLatitude);
+            ps.setDouble(2, ngoLongitude);
+            ps.setDouble(3, ngoLatitude);
+            ps.setDouble(4, rangeKm);
+            
+            ResultSet rs = ps.executeQuery();
+            
+            while (rs.next()) {
+                FoodListingBean listing = new FoodListingBean();
+                listing.setId(rs.getInt("id"));
+                listing.setDonorId(rs.getInt("donorId"));
+                listing.setFoodName(rs.getString("foodName"));
+                listing.setDescription(rs.getString("description"));
+                listing.setQuantity(rs.getInt("quantity"));
+                listing.setQuantityUnit(rs.getString("quantityUnit"));
+                listing.setFoodType(rs.getString("foodType"));
+                listing.setExpiryDate(rs.getString("expiryDate"));
+                listing.setPickupAddress(rs.getString("pickupAddress"));
+                listing.setPickupCity(rs.getString("pickupCity"));
+                listing.setPickupState(rs.getString("pickupState"));
+                listing.setPickupZipCode(rs.getString("pickupZipCode"));
+                listing.setPickupInstructions(rs.getString("pickupInstructions"));
+                listing.setStatus(rs.getString("status"));
+                listing.setImageUrl(rs.getString("imageUrl"));
+                listing.setLatitude(rs.getDouble("latitude"));
+                listing.setLongitude(rs.getDouble("longitude"));
+                listing.setCreatedAt(rs.getTimestamp("createdAt"));
+                listing.setUpdatedAt(rs.getTimestamp("updatedAt"));
+                listing.setActive(rs.getBoolean("isActive"));
+                listings.add(listing);
+            }
+            
+            rs.close();
+            ps.close();
+            con.close();
+            
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+        }
+        return listings;
+    }
 }

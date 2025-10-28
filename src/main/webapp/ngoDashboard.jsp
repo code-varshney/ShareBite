@@ -24,8 +24,30 @@ if (userType == null || !"ngo".equals(userType) || userId == null) {
 // Get NGO ID
 int ngoId = Integer.parseInt(userId);
 
-// Get available food listings
-List<FoodListingBean> availableFood = FoodListingDAO.getAllFoodListings();
+// Get NGO coordinates for range-based filtering
+double ngoLatitude = 0.0;
+double ngoLongitude = 0.0;
+try {
+    java.sql.Connection con = java.sql.DriverManager.getConnection("jdbc:mysql://localhost:3306/sharebite_db", "root", "");
+    java.sql.PreparedStatement ps = con.prepareStatement("SELECT latitude, longitude FROM users WHERE id=?");
+    ps.setInt(1, ngoId);
+    java.sql.ResultSet rs = ps.executeQuery();
+    if (rs.next()) {
+        ngoLatitude = rs.getDouble("latitude");
+        ngoLongitude = rs.getDouble("longitude");
+    }
+    rs.close();
+    ps.close();
+    con.close();
+} catch (Exception e) { e.printStackTrace(); }
+
+// Get available food listings within 5km range
+List<FoodListingBean> availableFood;
+if (ngoLatitude != 0.0 && ngoLongitude != 0.0) {
+    availableFood = FoodListingDAO.getFoodListingsWithinRange(ngoLatitude, ngoLongitude, 5.0);
+} else {
+    availableFood = FoodListingDAO.getAllFoodListings();
+}
 
 // Get NGO's food requests
 List<FoodRequestBean> ngoRequests = FoodRequestDAO.getFoodRequestsByNgo(ngoId);

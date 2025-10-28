@@ -287,6 +287,9 @@ if (userType == null || !"donor".equals(userType) || userId == null) {
                         <small class="form-text text-muted">Click on the map to set pickup location</small>
                         <input type="hidden" id="latitude" name="latitude" value="40.7128">
                         <input type="hidden" id="longitude" name="longitude" value="-74.0060">
+                        <div class="mt-2">
+                            <small class="text-muted">Coordinates: <span id="coordDisplay">40.7128, -74.0060</span></small>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label for="pickupInstructions" class="form-label">Pickup Instructions</label>
@@ -375,7 +378,8 @@ if (userType == null || !"donor".equals(userType) || userId == null) {
             map = new google.maps.Map(document.getElementById('map'), {
                 zoom: 13,
                 center: defaultLocation,
-                mapTypeId: 'roadmap'
+                mapTypeId: 'roadmap',
+                streetViewControl: false
             });
             
             // Create marker
@@ -401,6 +405,7 @@ if (userType == null || !"donor".equals(userType) || userId == null) {
             
             // Update coordinates on load
             updateCoordinates(defaultLocation.lat, defaultLocation.lng);
+            console.log('Map initialized with default coordinates:', defaultLocation.lat, defaultLocation.lng);
         }
         
         function updateMarkerPosition(latLng) {
@@ -445,6 +450,8 @@ if (userType == null || !"donor".equals(userType) || userId == null) {
         function updateCoordinates(lat, lng) {
             document.getElementById('latitude').value = lat.toFixed(6);
             document.getElementById('longitude').value = lng.toFixed(6);
+            document.getElementById('coordDisplay').textContent = lat.toFixed(6) + ', ' + lng.toFixed(6);
+            console.log('Coordinates updated:', lat.toFixed(6), lng.toFixed(6));
         }
         
 
@@ -461,61 +468,44 @@ if (userType == null || !"donor".equals(userType) || userId == null) {
                     function(position) {
                         const lat = position.coords.latitude;
                         const lng = position.coords.longitude;
+                        const accuracy = position.coords.accuracy;
                         const currentLocation = { lat: lat, lng: lng };
+                        
+                        console.log('GPS Location:', lat, lng, 'Accuracy:', accuracy + 'm');
                         
                         // Update map and marker
                         map.setCenter(currentLocation);
+                        map.setZoom(18);
                         marker.setPosition(currentLocation);
                         updateCoordinates(lat, lng);
                         
-                        // Reverse geocode to get address
-                        geocoder.geocode({ location: currentLocation }, function(results, status) {
-                            if (status === 'OK' && results[0]) {
-                                const addressComponents = results[0].address_components;
-                                let streetNumber = '';
-                                let route = '';
-                                let city = '';
-                                let state = '';
-                                let zipCode = '';
-                                
-                                for (let component of addressComponents) {
-                                    const types = component.types;
-                                    if (types.includes('street_number')) {
-                                        streetNumber = component.long_name;
-                                    } else if (types.includes('route')) {
-                                        route = component.long_name;
-                                    } else if (types.includes('locality') || types.includes('sublocality')) {
-                                        city = component.long_name;
-                                    } else if (types.includes('administrative_area_level_1')) {
-                                        state = component.short_name;
-                                    } else if (types.includes('postal_code')) {
-                                        zipCode = component.long_name;
-                                    }
-                                }
-                                
-                                // Update form fields with fallback values
-                                const fullAddress = (streetNumber + ' ' + route).trim() || results[0].formatted_address.split(',')[0];
-                                document.getElementById('pickupAddress').value = fullAddress;
-                                document.getElementById('pickupCity').value = city || 'Unknown City';
-                                document.getElementById('pickupState').value = state || 'Unknown State';
-                                document.getElementById('pickupZipCode').value = zipCode || '00000';
-                                
-                                console.log('Address filled:', { fullAddress, city, state, zipCode });
-                            }
-                        });
+                        alert(`Location captured! Accuracy: ${Math.round(accuracy)}m\nLat: ${lat.toFixed(6)}\nLng: ${lng.toFixed(6)}`);
                         
                         button.innerHTML = originalText;
                         button.disabled = false;
                     },
                     function(error) {
-                        alert('Error getting location: ' + error.message);
+                        console.error('Geolocation error:', error);
+                        let errorMsg = 'Unable to get location. ';
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMsg += 'Please allow location access and try again.';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMsg += 'GPS unavailable. Try moving to an open area.';
+                                break;
+                            case error.TIMEOUT:
+                                errorMsg += 'GPS timeout. Try again in a few seconds.';
+                                break;
+                        }
+                        alert(errorMsg);
                         button.innerHTML = originalText;
                         button.disabled = false;
                     },
                     {
                         enableHighAccuracy: true,
-                        timeout: 10000,
-                        maximumAge: 60000
+                        timeout: 30000,
+                        maximumAge: 0
                     }
                 );
             } else {
@@ -559,6 +549,11 @@ if (userType == null || !"donor".equals(userType) || userId == null) {
                 alert('Please select a future expiry date.');
                 return false;
             }
+            
+            // Log coordinates before submission
+            const lat = document.getElementById('latitude').value;
+            const lng = document.getElementById('longitude').value;
+            console.log('Form submission - Latitude:', lat, 'Longitude:', lng);
             
             return true;
         });

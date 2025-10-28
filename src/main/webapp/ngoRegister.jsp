@@ -8,6 +8,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBsFCAk-aMJNbajQouFgSQ_7ErRrw8dZ-M&libraries=places&callback=initMap" async defer></script>
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -103,6 +104,12 @@
             border-radius: 10px;
             margin-bottom: 1.5rem;
             font-size: 0.9rem;
+        }
+        #map {
+            height: 300px;
+            width: 100%;
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
         }
     </style>
 </head>
@@ -209,6 +216,19 @@
                 <label for="serviceArea" class="form-label">Service Area</label>
                 <textarea class="form-control" id="serviceArea" name="serviceArea" rows="2" placeholder="Describe the geographic area you serve"></textarea>
             </div>
+            <div class="mb-3">
+                <label class="form-label">Organization Location</label>
+                <button type="button" class="btn btn-outline-primary mb-2" onclick="getCurrentLocation()">
+                    <i class="fas fa-location-arrow me-2"></i>Use Current Location
+                </button>
+                <div id="map"></div>
+                <small class="form-text text-muted">Click on the map to set your organization's location</small>
+                <input type="hidden" id="latitude" name="latitude" value="40.7128">
+                <input type="hidden" id="longitude" name="longitude" value="-74.0060">
+                <div class="mt-2">
+                    <small class="text-muted">Coordinates: <span id="coordDisplay">40.7128, -74.0060</span></small>
+                </div>
+            </div>
             <div class="form-check mb-4">
                 <input class="form-check-input" type="checkbox" id="termsAccepted" name="termsAccepted" required>
                 <label class="form-check-label" for="termsAccepted">
@@ -230,6 +250,114 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        let map, marker, geocoder;
+        
+        // Google Maps callback function
+        window.initMap = function() {
+            try {
+                const defaultLocation = { lat: 40.7128, lng: -74.0060 };
+                console.log('Initializing map...');
+                
+                map = new google.maps.Map(document.getElementById('map'), {
+                    zoom: 13,
+                    center: defaultLocation,
+                    mapTypeId: 'roadmap'
+                });
+                
+                marker = new google.maps.Marker({
+                    position: defaultLocation,
+                    map: map,
+                    draggable: true
+                });
+                
+                geocoder = new google.maps.Geocoder();
+                
+                map.addListener('click', function(event) {
+                    updateMarkerPosition(event.latLng);
+                });
+                
+                marker.addListener('dragend', function(event) {
+                    updateMarkerPosition(event.latLng);
+                });
+                
+                updateCoordinates(defaultLocation.lat, defaultLocation.lng);
+                console.log('Map initialized successfully with coordinates:', defaultLocation.lat, defaultLocation.lng);
+                
+            } catch (error) {
+                console.error('Map initialization error:', error);
+                document.getElementById('map').innerHTML = '<div style="padding: 20px; text-align: center; color: #666;">Map failed to load. Please refresh the page.</div>';
+            }
+        };
+        
+
+        
+        function updateMarkerPosition(latLng) {
+            marker.setPosition(latLng);
+            updateCoordinates(latLng.lat(), latLng.lng());
+        }
+        
+        function updateCoordinates(lat, lng) {
+            document.getElementById('latitude').value = lat.toFixed(6);
+            document.getElementById('longitude').value = lng.toFixed(6);
+            document.getElementById('coordDisplay').textContent = lat.toFixed(6) + ', ' + lng.toFixed(6);
+            console.log('Coordinates updated:', lat.toFixed(6), lng.toFixed(6));
+        }
+        
+        function getCurrentLocation() {
+            if (navigator.geolocation) {
+                const button = event.target;
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Getting Location...';
+                button.disabled = true;
+                
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        const accuracy = position.coords.accuracy;
+                        const currentLocation = { lat: lat, lng: lng };
+                        
+                        console.log('GPS Location:', lat, lng, 'Accuracy:', accuracy + 'm');
+                        
+                        map.setCenter(currentLocation);
+                        map.setZoom(18);
+                        marker.setPosition(currentLocation);
+                        updateCoordinates(lat, lng);
+                        
+                        alert(`Location captured! Accuracy: ${Math.round(accuracy)}m\nLat: ${lat.toFixed(6)}\nLng: ${lng.toFixed(6)}`);
+                        
+                        button.innerHTML = originalText;
+                        button.disabled = false;
+                    },
+                    function(error) {
+                        console.error('Geolocation error:', error);
+                        let errorMsg = 'Unable to get location. ';
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                errorMsg += 'Please allow location access and try again.';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                errorMsg += 'GPS unavailable. Try moving to an open area.';
+                                break;
+                            case error.TIMEOUT:
+                                errorMsg += 'GPS timeout. Try again in a few seconds.';
+                                break;
+                        }
+                        alert(errorMsg);
+                        button.innerHTML = originalText;
+                        button.disabled = false;
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 30000,
+                        maximumAge: 0
+                    }
+                );
+            } else {
+                alert('Geolocation is not supported by this browser.');
+            }
+        }
+        
         // Single-step form validation
         document.getElementById('registrationForm').addEventListener('submit', function(e) {
             let isValid = true;
@@ -242,7 +370,6 @@
                     field.classList.remove('is-invalid');
                 }
             });
-            // Password match and length
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             if (password !== confirmPassword) {
@@ -253,6 +380,12 @@
                 document.getElementById('password').classList.add('is-invalid');
                 isValid = false;
             }
+            
+            // Log coordinates before submission
+            const lat = document.getElementById('latitude').value;
+            const lng = document.getElementById('longitude').value;
+            console.log('Form submission - Latitude:', lat, 'Longitude:', lng);
+            
             if (!isValid) {
                 e.preventDefault();
                 alert('Please complete all required fields correctly.');

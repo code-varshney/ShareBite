@@ -20,6 +20,8 @@ String city = request.getParameter("city");
 String state = request.getParameter("state");
 String zipCode = request.getParameter("zipCode");
 String serviceArea = request.getParameter("serviceArea");
+String latitude = request.getParameter("latitude");
+String longitude = request.getParameter("longitude");
 
 // Validate required fields
 if (organizationName == null || organizationType == null || contactPerson == null || 
@@ -79,6 +81,20 @@ if (registrationStatus > 0) {
 
     // Insert extra NGO details
     com.net.DAO.NGODetailsDAO.insertNGODetails(userId, registrationNumber, mission, contactPerson, contactTitle, website, serviceArea);
+    
+    // Update user coordinates if provided
+    if (latitude != null && longitude != null && !latitude.trim().isEmpty() && !longitude.trim().isEmpty()) {
+        try {
+            java.sql.Connection con2 = java.sql.DriverManager.getConnection("jdbc:mysql://localhost:3306/sharebite_db", "root", "");
+            java.sql.PreparedStatement ps2 = con2.prepareStatement("UPDATE users SET latitude=?, longitude=? WHERE id=?");
+            ps2.setDouble(1, Double.parseDouble(latitude.trim()));
+            ps2.setDouble(2, Double.parseDouble(longitude.trim()));
+            ps2.setInt(3, userId);
+            ps2.executeUpdate();
+            ps2.close();
+            con2.close();
+        } catch (Exception e) { e.printStackTrace(); }
+    }
 
     response.sendRedirect("ngoLogin.jsp?success=registration_pending");
 } else {
