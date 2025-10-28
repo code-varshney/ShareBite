@@ -8,7 +8,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBsFCAk-aMJNbajQouFgSQ_7ErRrw8dZ-M&libraries=places&callback=initMap" async defer></script>
     <style>
         body {
             font-family: 'Poppins', sans-serif;
@@ -252,11 +251,9 @@
     <script>
         let map, marker, geocoder;
         
-        // Google Maps callback function
         window.initMap = function() {
             try {
                 const defaultLocation = { lat: 40.7128, lng: -74.0060 };
-                console.log('Initializing map...');
                 
                 map = new google.maps.Map(document.getElementById('map'), {
                     zoom: 13,
@@ -281,15 +278,12 @@
                 });
                 
                 updateCoordinates(defaultLocation.lat, defaultLocation.lng);
-                console.log('Map initialized successfully with coordinates:', defaultLocation.lat, defaultLocation.lng);
                 
             } catch (error) {
-                console.error('Map initialization error:', error);
-                document.getElementById('map').innerHTML = '<div style="padding: 20px; text-align: center; color: #666;">Map failed to load. Please refresh the page.</div>';
+                console.error('Map error:', error);
+                document.getElementById('map').innerHTML = '<div style="padding: 20px; text-align: center; color: #666;">Map failed to load.</div>';
             }
         };
-        
-
         
         function updateMarkerPosition(latLng) {
             marker.setPosition(latLng);
@@ -300,7 +294,6 @@
             document.getElementById('latitude').value = lat.toFixed(6);
             document.getElementById('longitude').value = lng.toFixed(6);
             document.getElementById('coordDisplay').textContent = lat.toFixed(6) + ', ' + lng.toFixed(6);
-            console.log('Coordinates updated:', lat.toFixed(6), lng.toFixed(6));
         }
         
         function getCurrentLocation() {
@@ -314,42 +307,26 @@
                     function(position) {
                         const lat = position.coords.latitude;
                         const lng = position.coords.longitude;
-                        const accuracy = position.coords.accuracy;
                         const currentLocation = { lat: lat, lng: lng };
                         
-                        console.log('GPS Location:', lat, lng, 'Accuracy:', accuracy + 'm');
-                        
                         map.setCenter(currentLocation);
-                        map.setZoom(18);
+                        map.setZoom(15);
                         marker.setPosition(currentLocation);
                         updateCoordinates(lat, lng);
                         
-                        alert(`Location captured! Accuracy: ${Math.round(accuracy)}m\nLat: ${lat.toFixed(6)}\nLng: ${lng.toFixed(6)}`);
+                        alert('Location captured successfully!');
                         
                         button.innerHTML = originalText;
                         button.disabled = false;
                     },
                     function(error) {
-                        console.error('Geolocation error:', error);
-                        let errorMsg = 'Unable to get location. ';
-                        switch(error.code) {
-                            case error.PERMISSION_DENIED:
-                                errorMsg += 'Please allow location access and try again.';
-                                break;
-                            case error.POSITION_UNAVAILABLE:
-                                errorMsg += 'GPS unavailable. Try moving to an open area.';
-                                break;
-                            case error.TIMEOUT:
-                                errorMsg += 'GPS timeout. Try again in a few seconds.';
-                                break;
-                        }
-                        alert(errorMsg);
+                        alert('Unable to get location. Please set location manually on the map.');
                         button.innerHTML = originalText;
                         button.disabled = false;
                     },
                     {
                         enableHighAccuracy: true,
-                        timeout: 30000,
+                        timeout: 10000,
                         maximumAge: 0
                     }
                 );
@@ -358,7 +335,6 @@
             }
         }
         
-        // Single-step form validation
         document.getElementById('registrationForm').addEventListener('submit', function(e) {
             let isValid = true;
             const requiredFields = document.querySelectorAll('#registrationForm [required]');
@@ -381,11 +357,6 @@
                 isValid = false;
             }
             
-            // Log coordinates before submission
-            const lat = document.getElementById('latitude').value;
-            const lng = document.getElementById('longitude').value;
-            console.log('Form submission - Latitude:', lat, 'Longitude:', lng);
-            
             if (!isValid) {
                 e.preventDefault();
                 alert('Please complete all required fields correctly.');
@@ -393,5 +364,6 @@
             }
         });
     </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBsFCAk-aMJNbajQouFgSQ_7ErRrw8dZ-M&libraries=places&callback=initMap" async defer></script>
 </body>
 </html>

@@ -19,7 +19,6 @@ if (userType == null || !"donor".equals(userType) || userId == null) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBsFCAk-aMJNbajQouFgSQ_7ErRrw8dZ-M&libraries=places"></script>
 
     <style>
         body {
@@ -129,34 +128,12 @@ if (userType == null || !"donor".equals(userType) || userId == null) {
             color: #dc3545;
         }
         
-        .image-preview {
-            border: 2px dashed #dee2e6;
-            border-radius: 10px;
-            padding: 2rem;
-            text-align: center;
-            background: #f8f9fa;
-            transition: all 0.3s ease;
-        }
-        
-        .image-preview:hover {
-            border-color: #667eea;
-            background: #f0f2ff;
-        }
-        
-        .image-preview img {
-            max-width: 100%;
-            max-height: 200px;
-            border-radius: 10px;
-        }
-        
         #map {
             height: 400px;
             width: 100%;
             border-radius: 10px;
             border: 2px solid #e9ecef;
         }
-        
-
     </style>
 </head>
 <body>
@@ -255,7 +232,7 @@ if (userType == null || !"donor".equals(userType) || userId == null) {
                         <button type="button" class="btn btn-outline-primary" onclick="getCurrentLocation()">
                             <i class="fas fa-location-arrow me-2"></i>Use Current Location
                         </button>
-                        <small class="form-text text-muted d-block mt-1">Click to automatically fill address with your current location</small>
+                        <small class="form-text text-muted d-block mt-1">Click to capture your GPS coordinates</small>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
@@ -294,47 +271,7 @@ if (userType == null || !"donor".equals(userType) || userId == null) {
                     <div class="mb-3">
                         <label for="pickupInstructions" class="form-label">Pickup Instructions</label>
                         <textarea class="form-control" id="pickupInstructions" name="pickupInstructions" rows="2" 
-                                  placeholder="Any special instructions for pickup (e.g., call before arrival, specific entrance, etc.)"></textarea>
-                    </div>
-                </div>
-                
-                <!-- Image Upload -->
-                <div class="form-section">
-                    <h5><i class="fas fa-image"></i>Food Image (Optional)</h5>
-                    <div class="mb-3">
-                        <input type="file" class="form-control" id="foodImage" name="foodImage" 
-                               accept="image/*" onchange="previewImage(this)">
-                    </div>
-                    <div class="image-preview" id="imagePreview">
-                        <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
-                        <p class="text-muted">Upload an image to help NGOs better understand the food items</p>
-                    </div>
-                </div>
-                
-                <!-- Additional Information -->
-                <div class="form-section">
-                    <h5><i class="fas fa-info-circle"></i>Additional Information</h5>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="storageCondition" class="form-label">Storage Condition</label>
-                            <select class="form-select" id="storageCondition" name="storageCondition">
-                                <option value="">Select Condition</option>
-                                <option value="refrigerated">Refrigerated</option>
-                                <option value="frozen">Frozen</option>
-                                <option value="room_temperature">Room Temperature</option>
-                                <option value="dry_storage">Dry Storage</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="allergenInfo" class="form-label">Allergen Information</label>
-                            <input type="text" class="form-control" id="allergenInfo" name="allergenInfo" 
-                                   placeholder="e.g., Contains nuts, gluten-free, etc.">
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="specialNotes" class="form-label">Special Notes</label>
-                        <textarea class="form-control" id="specialNotes" name="specialNotes" rows="2" 
-                                  placeholder="Any additional information NGOs should know"></textarea>
+                                  placeholder="Any special instructions for pickup"></textarea>
                     </div>
                 </div>
                 
@@ -357,32 +294,24 @@ if (userType == null || !"donor".equals(userType) || userId == null) {
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        let map;
-        let marker;
-        let geocoder;
+        let map, marker;
         
-        // Set minimum date to today and initialize map
+        // Set minimum date to today
         document.addEventListener('DOMContentLoaded', function() {
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('expiryDate').min = today;
-            
-            // Initialize Google Map
-            initMap();
         });
         
+        // Initialize map
         function initMap() {
-            // Default location (New York City)
             const defaultLocation = { lat: 40.7128, lng: -74.0060 };
             
-            // Create map
             map = new google.maps.Map(document.getElementById('map'), {
                 zoom: 13,
                 center: defaultLocation,
-                mapTypeId: 'roadmap',
-                streetViewControl: false
+                mapTypeId: 'roadmap'
             });
             
-            // Create marker
             marker = new google.maps.Marker({
                 position: defaultLocation,
                 map: map,
@@ -390,73 +319,28 @@ if (userType == null || !"donor".equals(userType) || userId == null) {
                 title: 'Pickup Location'
             });
             
-            // Initialize geocoder
-            geocoder = new google.maps.Geocoder();
-            
-            // Add click listener to map
             map.addListener('click', function(event) {
                 updateMarkerPosition(event.latLng);
             });
             
-            // Add drag listener to marker
             marker.addListener('dragend', function(event) {
                 updateMarkerPosition(event.latLng);
             });
             
-            // Update coordinates on load
             updateCoordinates(defaultLocation.lat, defaultLocation.lng);
-            console.log('Map initialized with default coordinates:', defaultLocation.lat, defaultLocation.lng);
         }
         
         function updateMarkerPosition(latLng) {
             marker.setPosition(latLng);
             updateCoordinates(latLng.lat(), latLng.lng());
-            
-            // Reverse geocode to get address
-            geocoder.geocode({ location: latLng }, function(results, status) {
-                if (status === 'OK' && results[0]) {
-                    const addressComponents = results[0].address_components;
-                    let streetNumber = '';
-                    let route = '';
-                    let city = '';
-                    let state = '';
-                    let zipCode = '';
-                    
-                    for (let component of addressComponents) {
-                        const types = component.types;
-                        if (types.includes('street_number')) {
-                            streetNumber = component.long_name;
-                        } else if (types.includes('route')) {
-                            route = component.long_name;
-                        } else if (types.includes('locality') || types.includes('sublocality')) {
-                            city = component.long_name;
-                        } else if (types.includes('administrative_area_level_1')) {
-                            state = component.short_name;
-                        } else if (types.includes('postal_code')) {
-                            zipCode = component.long_name;
-                        }
-                    }
-                    
-                    // Update form fields with fallback values
-                    const fullAddress = (streetNumber + ' ' + route).trim() || results[0].formatted_address.split(',')[0];
-                    document.getElementById('pickupAddress').value = fullAddress;
-                    document.getElementById('pickupCity').value = city || 'Unknown City';
-                    document.getElementById('pickupState').value = state || 'Unknown State';
-                    document.getElementById('pickupZipCode').value = zipCode || '00000';
-                }
-            });
         }
         
         function updateCoordinates(lat, lng) {
             document.getElementById('latitude').value = lat.toFixed(6);
             document.getElementById('longitude').value = lng.toFixed(6);
             document.getElementById('coordDisplay').textContent = lat.toFixed(6) + ', ' + lng.toFixed(6);
-            console.log('Coordinates updated:', lat.toFixed(6), lng.toFixed(6));
         }
         
-
-        
-        // Get current location
         function getCurrentLocation() {
             if (navigator.geolocation) {
                 const button = event.target;
@@ -468,73 +352,31 @@ if (userType == null || !"donor".equals(userType) || userId == null) {
                     function(position) {
                         const lat = position.coords.latitude;
                         const lng = position.coords.longitude;
-                        const accuracy = position.coords.accuracy;
                         const currentLocation = { lat: lat, lng: lng };
                         
-                        console.log('GPS Location:', lat, lng, 'Accuracy:', accuracy + 'm');
-                        
-                        // Update map and marker
                         map.setCenter(currentLocation);
-                        map.setZoom(18);
+                        map.setZoom(15);
                         marker.setPosition(currentLocation);
                         updateCoordinates(lat, lng);
                         
-                        alert(`Location captured! Accuracy: ${Math.round(accuracy)}m\nLat: ${lat.toFixed(6)}\nLng: ${lng.toFixed(6)}`);
+                        alert('Location captured successfully!');
                         
                         button.innerHTML = originalText;
                         button.disabled = false;
                     },
                     function(error) {
-                        console.error('Geolocation error:', error);
-                        let errorMsg = 'Unable to get location. ';
-                        switch(error.code) {
-                            case error.PERMISSION_DENIED:
-                                errorMsg += 'Please allow location access and try again.';
-                                break;
-                            case error.POSITION_UNAVAILABLE:
-                                errorMsg += 'GPS unavailable. Try moving to an open area.';
-                                break;
-                            case error.TIMEOUT:
-                                errorMsg += 'GPS timeout. Try again in a few seconds.';
-                                break;
-                        }
-                        alert(errorMsg);
+                        alert('Unable to get location. Please set location manually on the map.');
                         button.innerHTML = originalText;
                         button.disabled = false;
                     },
                     {
                         enableHighAccuracy: true,
-                        timeout: 30000,
+                        timeout: 10000,
                         maximumAge: 0
                     }
                 );
             } else {
                 alert('Geolocation is not supported by this browser.');
-            }
-        }
-        
-
-        
-        // Image preview functionality
-        function previewImage(input) {
-            const preview = document.getElementById('imagePreview');
-            
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    preview.innerHTML = `
-                        <img src="${e.target.result}" alt="Food Preview" class="mb-2">
-                        <p class="text-muted">Image preview</p>
-                    `;
-                };
-                
-                reader.readAsDataURL(input.files[0]);
-            } else {
-                preview.innerHTML = `
-                    <i class="fas fa-cloud-upload-alt fa-3x text-muted mb-3"></i>
-                    <p class="text-muted">Upload an image to help NGOs better understand the food items</p>
-                `;
             }
         }
         
@@ -550,13 +392,9 @@ if (userType == null || !"donor".equals(userType) || userId == null) {
                 return false;
             }
             
-            // Log coordinates before submission
-            const lat = document.getElementById('latitude').value;
-            const lng = document.getElementById('longitude').value;
-            console.log('Form submission - Latitude:', lat, 'Longitude:', lng);
-            
             return true;
         });
     </script>
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBsFCAk-aMJNbajQouFgSQ_7ErRrw8dZ-M&callback=initMap"></script>
 </body>
 </html>
