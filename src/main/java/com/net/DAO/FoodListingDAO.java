@@ -185,12 +185,19 @@ public class FoodListingDAO {
             Class.forName(dclass);
             con = DriverManager.getConnection(url, username, password);
             
-            String sql = "SELECT fl.*, u.name as donorName, u.phone as donorPhone, u.city as donorCity FROM food_listings fl JOIN users u ON fl.donorId = u.id WHERE fl.id=? AND fl.isActive=1";
+            System.out.println("DEBUG: getFoodListingById called with ID: " + listingId);
+            
+            // Remove isActive=1 restriction and make JOIN optional
+            String sql = "SELECT fl.*, u.name as donorName, u.phone as donorPhone, u.city as donorCity FROM food_listings fl LEFT JOIN users u ON fl.donorId = u.id WHERE fl.id=?";
             ps = con.prepareStatement(sql);
             ps.setInt(1, listingId);
             rs = ps.executeQuery();
             
+            System.out.println("DEBUG: Executed query for food listing ID: " + listingId);
+            
             if (rs.next()) {
+                System.out.println("DEBUG: Found food listing - Name: " + rs.getString("foodName") + ", Status: " + rs.getString("status") + ", Active: " + rs.getBoolean("isActive"));
+                
                 listing = new FoodListingBean();
                 listing.setId(rs.getInt("id"));
                 listing.setDonorId(rs.getInt("donorId"));
@@ -210,6 +217,8 @@ public class FoodListingDAO {
                 listing.setCreatedAt(rs.getTimestamp("createdAt"));
                 listing.setUpdatedAt(rs.getTimestamp("updatedAt"));
                 listing.setActive(rs.getBoolean("isActive"));
+            } else {
+                System.out.println("DEBUG: No food listing found with ID: " + listingId);
             }
             
         } catch (ClassNotFoundException | SQLException e) {

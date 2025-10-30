@@ -135,4 +135,36 @@ public class NotificationDAO {
         }
         return false;
     }
+
+    public static boolean notifyNGOAboutRequestUpdate(int ngoId, int donorId, int foodListingId, String message) {
+        try {
+            Class.forName(dclass);
+            try (Connection con = DriverManager.getConnection(url, username, password);
+                 PreparedStatement ps = con.prepareStatement(
+                    "INSERT INTO notifications (ngo_id, donor_id, food_listing_id, message, type, is_read, created_at) VALUES (?, ?, ?, ?, 'request_update', 0, NOW())")) {
+                ps.setInt(1, ngoId);
+                ps.setInt(2, donorId);
+                ps.setInt(3, foodListingId);
+                ps.setString(4, message);
+                return ps.executeUpdate() > 0;
+            }
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public static boolean markAllAsRead(int ngoId) {
+        try {
+            Class.forName(dclass);
+            try (Connection con = DriverManager.getConnection(url, username, password);
+                 PreparedStatement ps = con.prepareStatement("UPDATE notifications SET is_read = 1 WHERE ngo_id = ?")) {
+                ps.setInt(1, ngoId);
+                return ps.executeUpdate() > 0;
+            }
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

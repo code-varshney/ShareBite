@@ -1282,33 +1282,29 @@ int unreadCount = NotificationDAO.getUnreadCount(ngoId);
                 return;
             }
             
-            const formData = new FormData(form);
+            // Hide modal first
+            const modal = bootstrap.Modal.getInstance(document.getElementById('requestModal'));
+            modal.hide();
             
-            fetch('submitFoodRequest.jsp', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => {
-                if (response.redirected) {
-                    window.location.href = response.url;
-                } else {
-                    return response.text();
-                }
-            })
-            .then(data => {
-                if (data && data.includes('error')) {
-                    alert('Error submitting request. Please try again.');
-                } else {
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('requestModal'));
-                    modal.hide();
-                    alert('Food request submitted successfully!');
-                    location.reload();
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error submitting request. Please try again.');
-            });
+            // Create a hidden form and submit it traditionally
+            const hiddenForm = document.createElement('form');
+            hiddenForm.method = 'POST';
+            hiddenForm.action = 'submitFoodRequestSimple.jsp';
+            hiddenForm.style.display = 'none';
+            
+            // Copy form data to hidden form
+            const formData = new FormData(form);
+            for (let [key, value] of formData.entries()) {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = key;
+                input.value = value;
+                hiddenForm.appendChild(input);
+            }
+            
+            // Add to document and submit
+            document.body.appendChild(hiddenForm);
+            hiddenForm.submit();
         }
         
         function showResponse(response) {

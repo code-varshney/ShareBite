@@ -653,6 +653,9 @@ int totalRequests = myRequests != null ? myRequests.size() : 0;
                         <li class="nav-item">
                             <a href="#requests" class="nav-link">
                                 <i class="fas fa-handshake me-2"></i>NGO Requests
+                                <% if (myRequests != null && myRequests.stream().anyMatch(r -> "pending".equals(r.getStatus()))) { %>
+                                    <span class="badge bg-warning ms-2"><%= myRequests.stream().filter(r -> "pending".equals(r.getStatus())).count() %></span>
+                                <% } %>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -1081,9 +1084,106 @@ int totalRequests = myRequests != null ? myRequests.size() : 0;
                     </div>
                 </div>
 
-                <!-- Server-side Rendered Food Listings Section (removed old location) -->
-                <!-- Dynamic sections will be loaded here -->
-                <div id="section-requests" style="display: none;"></div>
+                <!-- NGO Requests Section -->
+                <div id="section-requests" style="display: none;">
+                    <div class="main-content">
+                        <h4 class="mb-4"><i class="fas fa-handshake me-2"></i>NGO Requests</h4>
+                        
+                        <!-- Statistics -->
+                        <div class="row mb-4">
+                            <div class="col-md-3">
+                                <div class="stats-card">
+                                    <div class="stats-number"><%= myRequests != null ? myRequests.stream().filter(r -> "pending".equals(r.getStatus())).count() : 0 %></div>
+                                    <div>Pending Requests</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stats-card">
+                                    <div class="stats-number"><%= myRequests != null ? myRequests.stream().filter(r -> "approved".equals(r.getStatus())).count() : 0 %></div>
+                                    <div>Approved Requests</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stats-card">
+                                    <div class="stats-number"><%= myRequests != null ? myRequests.stream().filter(r -> "completed".equals(r.getStatus())).count() : 0 %></div>
+                                    <div>Completed Requests</div>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="stats-card">
+                                    <div class="stats-number"><%= myRequests != null ? myRequests.stream().filter(r -> "rejected".equals(r.getStatus())).count() : 0 %></div>
+                                    <div>Rejected Requests</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Requests List -->
+                        <% if (myRequests != null && !myRequests.isEmpty()) { %>
+                            <% for (FoodRequestBean ngoRequest : myRequests) { %>
+                                <div class="food-card mb-3">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-8">
+                                            <h6 class="mb-2">
+                                                <i class="fas fa-handshake text-primary me-2"></i>
+                                                Request from <%= ngoRequest.getNgoName() != null ? ngoRequest.getNgoName() : "NGO" %>
+                                            </h6>
+                                            <p class="mb-1"><strong>Food Item:</strong> <%= ngoRequest.getFoodName() != null ? ngoRequest.getFoodName() : "Food Listing #" + ngoRequest.getFoodListingId() %></p>
+                                            <p class="mb-1"><strong>Requested Pickup:</strong> <%= ngoRequest.getPickupDate() %><% if (ngoRequest.getPickupTime() != null && !ngoRequest.getPickupTime().isEmpty()) { %> at <%= ngoRequest.getPickupTime() %><% } %></p>
+                                            <% if (ngoRequest.getRequestMessage() != null && !ngoRequest.getRequestMessage().isEmpty()) { %>
+                                                <p class="mb-1"><strong>Message:</strong> <%= ngoRequest.getRequestMessage() %></p>
+                                            <% } %>
+                                            <div class="mt-2">
+                                                <span class="badge fs-6 <%= "pending".equals(ngoRequest.getStatus()) ? "bg-warning text-dark" : "approved".equals(ngoRequest.getStatus()) ? "bg-success" : "rejected".equals(ngoRequest.getStatus()) ? "bg-danger" : "completed".equals(ngoRequest.getStatus()) ? "bg-info" : "bg-secondary" %>">
+                                                    <%= ngoRequest.getStatus().substring(0, 1).toUpperCase() + ngoRequest.getStatus().substring(1) %>
+                                                </span>
+                                                <small class="text-muted ms-3">
+                                                    <i class="fas fa-clock me-1"></i>Requested: <%= ngoRequest.getCreatedAt() %>
+                                                </small>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 text-end">
+                                            <% if ("pending".equals(ngoRequest.getStatus())) { %>
+                                                <div class="btn-group-vertical w-100">
+                                                    <button class="btn btn-success btn-sm mb-2" onclick="updateRequestStatus(<%= ngoRequest.getId() %>, 'approved')">
+                                                        <i class="fas fa-check me-1"></i>Approve Request
+                                                    </button>
+                                                    <button class="btn btn-danger btn-sm" onclick="updateRequestStatus(<%= ngoRequest.getId() %>, 'rejected')">
+                                                        <i class="fas fa-times me-1"></i>Reject Request
+                                                    </button>
+                                                </div>
+                                            <% } else if ("approved".equals(ngoRequest.getStatus())) { %>
+                                                <div class="btn-group-vertical w-100">
+                                                    <button class="btn btn-info btn-sm mb-2" onclick="updateRequestStatus(<%= ngoRequest.getId() %>, 'completed')">
+                                                        <i class="fas fa-check-double me-1"></i>Mark Completed
+                                                    </button>
+                                                    <button class="btn btn-outline-warning btn-sm" onclick="updateRequestStatus(<%= ngoRequest.getId() %>, 'pending')">
+                                                        <i class="fas fa-undo me-1"></i>Back to Pending
+                                                    </button>
+                                                </div>
+                                            <% } else { %>
+                                                <div class="text-center">
+                                                    <span class="text-muted">Request <%= ngoRequest.getStatus() %></span>
+                                                    <% if ("rejected".equals(ngoRequest.getStatus()) || "completed".equals(ngoRequest.getStatus())) { %>
+                                                        <br><small class="text-muted">No further actions needed</small>
+                                                    <% } %>
+                                                </div>
+                                            <% } %>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% } %>
+                        <% } else { %>
+                            <div class="text-center py-4">
+                                <i class="fas fa-handshake fa-3x text-muted mb-3"></i>
+                                <h5 class="text-muted">No NGO requests yet</h5>
+                                <p class="text-muted">When NGOs request your food listings, they will appear here for you to approve or reject.</p>
+                                <a href="addFoodListing.jsp" class="btn btn-success">
+                                    <i class="fas fa-plus me-2"></i>Add Food Listing
+                                </a>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
                 <div id="section-add-food" style="display: none;"></div>
                 <div id="section-profile" style="display: none;"></div>
             </div>
@@ -2734,6 +2834,62 @@ int totalRequests = myRequests != null ? myRequests.size() : 0;
             });
         }
 
+        // Global function for updating request status
+        function updateRequestStatus(requestId, newStatus) {
+            let confirmMessage = '';
+            switch(newStatus) {
+                case 'approved':
+                    confirmMessage = 'Are you sure you want to approve this request? The NGO will be notified and can proceed with pickup.';
+                    break;
+                case 'rejected':
+                    confirmMessage = 'Are you sure you want to reject this request? The NGO will be notified.';
+                    break;
+                case 'completed':
+                    confirmMessage = 'Are you sure you want to mark this request as completed? This indicates the food has been successfully picked up.';
+                    break;
+                default:
+                    confirmMessage = 'Are you sure you want to update this request status to ' + newStatus + '?';
+            }
+            
+            if (confirm(confirmMessage)) {
+                const formData = new FormData();
+                formData.append('requestId', requestId);
+                formData.append('status', newStatus);
+                
+                fetch('updateRequestStatus.jsp', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.text())
+                .then(data => {
+                    if (data.includes('SUCCESS')) {
+                        let successMessage = '';
+                        switch(newStatus) {
+                            case 'approved':
+                                successMessage = 'Request approved successfully! The NGO has been notified.';
+                                break;
+                            case 'rejected':
+                                successMessage = 'Request rejected. The NGO has been notified.';
+                                break;
+                            case 'completed':
+                                successMessage = 'Request marked as completed successfully!';
+                                break;
+                            default:
+                                successMessage = 'Request status updated to ' + newStatus + ' successfully!';
+                        }
+                        alert(successMessage);
+                        location.reload();
+                    } else {
+                        alert('Error updating request status: ' + data.replace('ERROR: ', ''));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error updating request status. Please try again.');
+                });
+            }
+        }
+        
         // Initialize dashboard when page loads
         let dashboard;
         document.addEventListener('DOMContentLoaded', () => {

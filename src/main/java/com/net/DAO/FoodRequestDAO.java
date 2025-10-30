@@ -31,9 +31,12 @@ public class FoodRequestDAO {
             ps.setString(6, frb.getStatus());
             ps.setBoolean(7, frb.isActive());
             
+            System.out.println("DEBUG: Creating food request - NGO ID: " + frb.getNgoId() + ", Food Listing ID: " + frb.getFoodListingId());
             status = ps.executeUpdate();
+            System.out.println("DEBUG: Food request creation result: " + status);
             
         } catch (ClassNotFoundException | SQLException e) {
+            System.out.println("DEBUG: Error creating food request: " + e.getMessage());
             e.printStackTrace();
         } finally {
             try {
@@ -106,7 +109,10 @@ public class FoodRequestDAO {
             ps.setInt(1, donorId);
             rs = ps.executeQuery();
             
+            System.out.println("DEBUG: Executing query for donor ID: " + donorId);
+            int count = 0;
             while (rs.next()) {
+                count++;
                 FoodRequestBean request = new FoodRequestBean();
                 request.setId(rs.getInt("id"));
                 request.setNgoId(rs.getInt("ngoId"));
@@ -119,10 +125,15 @@ public class FoodRequestDAO {
                 request.setCreatedAt(rs.getTimestamp("createdAt"));
                 request.setUpdatedAt(rs.getTimestamp("updatedAt"));
                 request.setActive(rs.getBoolean("isActive"));
+                request.setNgoName(rs.getString("organizationName") != null ? rs.getString("organizationName") : rs.getString("ngoName"));
+                request.setFoodName(rs.getString("foodName"));
                 requests.add(request);
+                System.out.println("DEBUG: Found request ID " + request.getId() + " from NGO: " + request.getNgoName());
             }
+            System.out.println("DEBUG: Total requests found for donor " + donorId + ": " + count);
             
         } catch (ClassNotFoundException | SQLException e) {
+            System.out.println("DEBUG: Error in getFoodRequestsForDonor: " + e.getMessage());
             e.printStackTrace();
         } finally {
             try {
