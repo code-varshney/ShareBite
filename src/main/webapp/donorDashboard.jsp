@@ -651,7 +651,7 @@ int totalRequests = myRequests != null ? myRequests.size() : 0;
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a href="#requests" class="nav-link">
+                            <a href="ngoRequests.jsp" class="nav-link">
                                 <i class="fas fa-handshake me-2"></i>NGO Requests
                                 <% if (myRequests != null && myRequests.stream().anyMatch(r -> "pending".equals(r.getStatus()))) { %>
                                     <span class="badge bg-warning ms-2"><%= myRequests.stream().filter(r -> "pending".equals(r.getStatus())).count() %></span>
@@ -1142,32 +1142,25 @@ int totalRequests = myRequests != null ? myRequests.size() : 0;
                                             </div>
                                         </div>
                                         <div class="col-md-4 text-end">
-                                            <% if ("pending".equals(ngoRequest.getStatus())) { %>
-                                                <div class="btn-group-vertical w-100">
+                                            <div class="btn-group-vertical w-100">
+                                                <a href="viewNGORequest.jsp?requestId=<%= ngoRequest.getId() %>" class="btn btn-outline-primary btn-sm mb-2">
+                                                    <i class="fas fa-eye me-1"></i>View Details
+                                                </a>
+                                                <% if ("pending".equals(ngoRequest.getStatus())) { %>
                                                     <button class="btn btn-success btn-sm mb-2" onclick="updateRequestStatus(<%= ngoRequest.getId() %>, 'approved')">
-                                                        <i class="fas fa-check me-1"></i>Approve Request
+                                                        <i class="fas fa-check me-1"></i>Approve
                                                     </button>
                                                     <button class="btn btn-danger btn-sm" onclick="updateRequestStatus(<%= ngoRequest.getId() %>, 'rejected')">
-                                                        <i class="fas fa-times me-1"></i>Reject Request
+                                                        <i class="fas fa-times me-1"></i>Reject
                                                     </button>
-                                                </div>
-                                            <% } else if ("approved".equals(ngoRequest.getStatus())) { %>
-                                                <div class="btn-group-vertical w-100">
+                                                <% } else if ("approved".equals(ngoRequest.getStatus())) { %>
                                                     <button class="btn btn-info btn-sm mb-2" onclick="updateRequestStatus(<%= ngoRequest.getId() %>, 'completed')">
                                                         <i class="fas fa-check-double me-1"></i>Mark Completed
                                                     </button>
-                                                    <button class="btn btn-outline-warning btn-sm" onclick="updateRequestStatus(<%= ngoRequest.getId() %>, 'pending')">
-                                                        <i class="fas fa-undo me-1"></i>Back to Pending
-                                                    </button>
-                                                </div>
-                                            <% } else { %>
-                                                <div class="text-center">
-                                                    <span class="text-muted">Request <%= ngoRequest.getStatus() %></span>
-                                                    <% if ("rejected".equals(ngoRequest.getStatus()) || "completed".equals(ngoRequest.getStatus())) { %>
-                                                        <br><small class="text-muted">No further actions needed</small>
-                                                    <% } %>
-                                                </div>
-                                            <% } %>
+                                                <% } else { %>
+                                                    <span class="text-muted small">Request <%= ngoRequest.getStatus() %></span>
+                                                <% } %>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -1618,49 +1611,37 @@ int totalRequests = myRequests != null ? myRequests.size() : 0;
             }
 
             setupNavigation() {
-                // Handle sidebar navigation
-                document.querySelectorAll('.sidebar .nav-link').forEach(link => {
-                    link.addEventListener('click', (e) => {
+                // Handle all navigation links
+                document.addEventListener('click', (e) => {
+                    const link = e.target.closest('a[href^="#"]');
+                    if (link && !link.hasAttribute('data-bs-toggle')) {
                         e.preventDefault();
-                        const target = e.currentTarget.getAttribute('href').substring(1);
-                        this.showSection(target);
-                        this.updateActiveNav(e.currentTarget);
-                    });
-                });
-
-                // Handle anchor links in welcome section
-                document.querySelectorAll('a[href^="#"]').forEach(link => {
-                    link.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        const target = e.currentTarget.getAttribute('href').substring(1);
+                        const target = link.getAttribute('href').substring(1);
                         this.showSection(target);
                         this.updateActiveNavBySection(target);
-                    });
+                    }
                 });
             }
 
             showSection(sectionName) {
+                console.log('Showing section:', sectionName);
+                
                 // Hide all sections first
                 document.querySelectorAll('[id^="section-"]').forEach(section => {
                     section.style.display = 'none';
                 });
 
-                // Show target section with animation
+                // Show target section
                 const targetSection = document.getElementById(`section-${sectionName}`);
                 if (targetSection) {
                     targetSection.style.display = 'block';
-                    targetSection.style.opacity = '0';
-                    targetSection.style.transform = 'translateY(20px)';
-                    
-                    setTimeout(() => {
-                        targetSection.style.transition = 'all 0.3s ease';
-                        targetSection.style.opacity = '1';
-                        targetSection.style.transform = 'translateY(0)';
-                    }, 10);
+                    targetSection.style.opacity = '1';
+                    targetSection.style.transform = 'translateY(0)';
+                } else {
+                    console.error('Section not found:', `section-${sectionName}`);
                 }
 
                 this.currentSection = sectionName;
-                this.loadSectionData(sectionName);
             }
 
             updateActiveNav(activeLink) {
@@ -1911,11 +1892,11 @@ int totalRequests = myRequests != null ? myRequests.size() : 0;
                             </div>' +
                             '<div class="col-md-2 mb-3">' +
                                 '<label for="pickupCity" class="form-label">City <span class="text-danger">*</span></label>' +
-                                '<input type="text" class="form-control" id="pickupCity" required placeholder=\'City\'>' +
+                                '<input type="text" class="form-control" id="pickupCity" required placeholder="City">' +
                             '</div>' +
                             '<div class="col-md-2 mb-3">' +
                                 '<label for="pickupState" class="form-label">State <span class="text-danger">*</span></label>' +
-                                '<input type="text" class="form-control" id="pickupState" required placeholder=\'State\'>' +
+                                '<input type="text" class="form-control" id="pickupState" required placeholder="State">' +
                             '</div>' +
                         '</div>' +
                         '<div class="row">' +
@@ -2916,14 +2897,7 @@ int totalRequests = myRequests != null ? myRequests.size() : 0;
             }, 100);
         });
 
-        // Add smooth scrolling for anchor links
-        document.addEventListener('click', (e) => {
-            if (e.target.matches('a[href^="#"]')) {
-                e.preventDefault();
-                const target = e.target.getAttribute('href').substring(1);
-                dashboard.showSection(target);
-            }
-        });
+
     </script>
 </body>
 </html>

@@ -191,10 +191,9 @@ public class FoodRequestDAO {
         return request;
     }
     
-    public static int updateRequestStatus(int requestId, String newStatus) {
+    public static boolean updateRequestStatus(int requestId, String newStatus) {
         Connection con = null;
         PreparedStatement ps = null;
-        int status = 0;
         
         try {
             Class.forName(dclass);
@@ -205,10 +204,12 @@ public class FoodRequestDAO {
             ps.setString(1, newStatus);
             ps.setInt(2, requestId);
             
-            status = ps.executeUpdate();
+            int rowsUpdated = ps.executeUpdate();
+            return rowsUpdated > 0;
             
         } catch (ClassNotFoundException | SQLException e) {
             e.printStackTrace();
+            return false;
         } finally {
             try {
                 if (ps != null) ps.close();
@@ -217,7 +218,6 @@ public class FoodRequestDAO {
                 e.printStackTrace();
             }
         }
-        return status;
     }
     
     public static int addDonorResponse(int requestId, String response) {
