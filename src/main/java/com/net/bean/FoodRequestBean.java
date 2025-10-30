@@ -16,6 +16,7 @@ public class FoodRequestBean {
     private boolean isActive;
     private String ngoName;
     private String foodName;
+    private double requestedQuantity;
 
     // Default constructor
     public FoodRequestBean() {}
@@ -135,5 +136,13 @@ public class FoodRequestBean {
 
     public void setFoodName(String foodName) {
         this.foodName = foodName;
+    }
+
+    public double getRequestedQuantity() {
+        return requestedQuantity;
+    }
+
+    public void setRequestedQuantity(double requestedQuantity) {
+        this.requestedQuantity = requestedQuantity;
     }
 }

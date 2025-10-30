@@ -1,7 +1,9 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ page import="com.net.DAO.FoodRequestDAO" %>
 <%@ page import="com.net.DAO.NotificationDAO" %>
+<%@ page import="com.net.DAO.FoodListingDAO" %>
 <%@ page import="com.net.bean.FoodRequestBean" %>
+<%@ page import="com.net.bean.FoodListingBean" %>
 <%@ page import="java.sql.*" %>
 
 <%
@@ -51,6 +53,37 @@ try {
     con.close();
     
     if (rowsUpdated > 0) {
+        // Handle quantity management if approved
+        if ("approved".equals(newStatus)) {
+            FoodListingBean foodListing = FoodListingDAO.getFoodListingById(foodRequest.getFoodListingId());
+            if (foodListing != null) {
+                double currentQuantity = foodListing.getQuantity();
+                double requestedQuantity = foodRequest.getRequestedQuantity();
+                
+                if (requestedQuantity >= currentQuantity) {
+                    // Remove food listing completely
+                    Class.forName("com.mysql.cj.jdbc.Driver");
+                    Connection con2 = DriverManager.getConnection("jdbc:mysql://localhost:3306/sharebite_db", "root", "");
+                    PreparedStatement ps2 = con2.prepareStatement("UPDATE food_listings SET status='Collected', isActive=0 WHERE id=?");
+                    ps2.setInt(1, foodRequest.getFoodListingId());
+                    ps2.executeUpdate();
+                    ps2.close();
+                    con2.close();
+                } else {
+                    // Reduce quantity
+                    double newQuantity = currentQuantity - requestedQuantity;
+                    Class.forName("com.mysql.cj.jdbc.Driver");
+                    Connection con2 = DriverManager.getConnection("jdbc:mysql://localhost:3306/sharebite_db", "root", "");
+                    PreparedStatement ps2 = con2.prepareStatement("UPDATE food_listings SET quantity=? WHERE id=?");
+                    ps2.setDouble(1, newQuantity);
+                    ps2.setInt(2, foodRequest.getFoodListingId());
+                    ps2.executeUpdate();
+                    ps2.close();
+                    con2.close();
+                }
+            }
+        }
+        
         // Create notification for NGO
         String message = "";
         if ("approved".equals(newStatus)) {

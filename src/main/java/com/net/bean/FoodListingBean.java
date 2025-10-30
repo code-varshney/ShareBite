@@ -7,7 +7,7 @@ public class FoodListingBean {
     private int donorId;
     private String foodName;
     private String description;
-    private int quantity;
+    private double quantity;
     private String quantityUnit; // "kg", "pieces", "boxes", etc.
     private String foodType; // "fresh", "canned", "baked", "dairy", "frozen"
     private String expiryDate;
@@ -31,7 +31,7 @@ public class FoodListingBean {
     public FoodListingBean() {}
 
     // Constructor with parameters
-    public FoodListingBean(int donorId, String foodName, String description, int quantity, 
+    public FoodListingBean(int donorId, String foodName, String description, double quantity, 
                           String quantityUnit, String foodType, String expiryDate, 
                           String pickupAddress, String pickupCity, String pickupState, 
                           String pickupZipCode, String pickupInstructions) {
@@ -84,11 +84,11 @@ public class FoodListingBean {
         this.description = description;
     }
 
-    public int getQuantity() {
+    public double getQuantity() {
         return quantity;
     }
 
-    public void setQuantity(int quantity) {
+    public void setQuantity(double quantity) {
         this.quantity = quantity;
     }
 

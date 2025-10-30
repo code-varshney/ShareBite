@@ -26,7 +26,7 @@ public class FoodListingDAO {
             ps.setInt(1, flb.getDonorId());
             ps.setString(2, flb.getFoodName());
             ps.setString(3, flb.getDescription());
-            ps.setInt(4, flb.getQuantity());
+            ps.setDouble(4, flb.getQuantity());
             ps.setString(5, flb.getQuantityUnit());
             ps.setString(6, flb.getFoodType());
             ps.setString(7, flb.getExpiryDate());
@@ -85,7 +85,7 @@ public class FoodListingDAO {
                 listing.setDonorId(rs.getInt("donorId"));
                 listing.setFoodName(rs.getString("foodName"));
                 listing.setDescription(rs.getString("description"));
-                listing.setQuantity(rs.getInt("quantity"));
+                listing.setQuantity(rs.getDouble("quantity"));
                 listing.setQuantityUnit(rs.getString("quantityUnit"));
                 listing.setFoodType(rs.getString("foodType"));
                 listing.setExpiryDate(rs.getString("expiryDate"));
@@ -144,7 +144,7 @@ public class FoodListingDAO {
                 listing.setDonorId(rs.getInt("donorId"));
                 listing.setFoodName(rs.getString("foodName"));
                 listing.setDescription(rs.getString("description"));
-                listing.setQuantity(rs.getInt("quantity"));
+                listing.setQuantity(rs.getDouble("quantity"));
                 listing.setQuantityUnit(rs.getString("quantityUnit"));
                 listing.setFoodType(rs.getString("foodType"));
                 listing.setExpiryDate(rs.getString("expiryDate"));
@@ -203,7 +203,7 @@ public class FoodListingDAO {
                 listing.setDonorId(rs.getInt("donorId"));
                 listing.setFoodName(rs.getString("foodName"));
                 listing.setDescription(rs.getString("description"));
-                listing.setQuantity(rs.getInt("quantity"));
+                listing.setQuantity(rs.getDouble("quantity"));
                 listing.setQuantityUnit(rs.getString("quantityUnit"));
                 listing.setFoodType(rs.getString("foodType"));
                 listing.setExpiryDate(rs.getString("expiryDate"));
@@ -281,7 +281,7 @@ public class FoodListingDAO {
                 listing.setDonorId(rs.getInt("donorId"));
                 listing.setFoodName(rs.getString("foodName"));
                 listing.setDescription(rs.getString("description"));
-                listing.setQuantity(rs.getInt("quantity"));
+                listing.setQuantity(rs.getDouble("quantity"));
                 listing.setQuantityUnit(rs.getString("quantityUnit"));
                 listing.setFoodType(rs.getString("foodType"));
                 listing.setExpiryDate(rs.getString("expiryDate"));
@@ -354,7 +354,7 @@ public class FoodListingDAO {
             ps = con.prepareStatement(sql);
             ps.setString(1, flb.getFoodName());
             ps.setString(2, flb.getDescription());
-            ps.setInt(3, flb.getQuantity());
+            ps.setDouble(3, flb.getQuantity());
             ps.setString(4, flb.getQuantityUnit());
             ps.setString(5, flb.getFoodType());
             ps.setString(6, flb.getExpiryDate());
@@ -429,7 +429,7 @@ public class FoodListingDAO {
                 listing.setDonorId(rs.getInt("donorId"));
                 listing.setFoodName(rs.getString("foodName"));
                 listing.setDescription(rs.getString("description"));
-                listing.setQuantity(rs.getInt("quantity"));
+                listing.setQuantity(rs.getDouble("quantity"));
                 listing.setQuantityUnit(rs.getString("quantityUnit"));
                 listing.setFoodType(rs.getString("foodType"));
                 listing.setExpiryDate(rs.getString("expiryDate"));
@@ -515,7 +515,7 @@ public class FoodListingDAO {
                 listing.setDonorId(rs.getInt("donorId"));
                 listing.setFoodName(rs.getString("foodName"));
                 listing.setDescription(rs.getString("description"));
-                listing.setQuantity(rs.getInt("quantity"));
+                listing.setQuantity(rs.getDouble("quantity"));
                 listing.setQuantityUnit(rs.getString("quantityUnit"));
                 listing.setFoodType(rs.getString("foodType"));
                 listing.setExpiryDate(rs.getString("expiryDate"));

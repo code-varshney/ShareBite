@@ -21,15 +21,16 @@ public class FoodRequestDAO {
             Class.forName(dclass);
             con = DriverManager.getConnection(url, username, password);
             
-            String sql = "INSERT INTO food_requests(ngoId, foodListingId, requestMessage, pickupDate, pickupTime, status, createdAt, updatedAt, isActive) VALUES(?,?,?,?,?,?,NOW(),NOW(),?)";
+            String sql = "INSERT INTO food_requests(ngoId, foodListingId, requestMessage, pickupDate, pickupTime, requestedQuantity, status, createdAt, updatedAt, isActive) VALUES(?,?,?,?,?,?,?,NOW(),NOW(),?)";
             ps = con.prepareStatement(sql);
             ps.setInt(1, frb.getNgoId());
             ps.setInt(2, frb.getFoodListingId());
             ps.setString(3, frb.getRequestMessage());
             ps.setString(4, frb.getPickupDate());
             ps.setString(5, frb.getPickupTime());
-            ps.setString(6, frb.getStatus());
-            ps.setBoolean(7, frb.isActive());
+            ps.setDouble(6, frb.getRequestedQuantity());
+            ps.setString(7, frb.getStatus());
+            ps.setBoolean(8, frb.isActive());
             
             System.out.println("DEBUG: Creating food request - NGO ID: " + frb.getNgoId() + ", Food Listing ID: " + frb.getFoodListingId());
             status = ps.executeUpdate();
@@ -170,6 +171,7 @@ public class FoodRequestDAO {
                 request.setRequestMessage(rs.getString("requestMessage"));
                 request.setPickupDate(rs.getString("pickupDate"));
                 request.setPickupTime(rs.getString("pickupTime"));
+                request.setRequestedQuantity(rs.getDouble("requestedQuantity"));
                 request.setStatus(rs.getString("status"));
                 request.setDonorResponse(rs.getString("donorResponse"));
                 request.setCreatedAt(rs.getTimestamp("createdAt"));

@@ -119,18 +119,23 @@ public class NotificationDAO {
 
     public static boolean notifyDonorAboutFoodRequest(int donorId, int ngoId, int foodListingId, String ngoName, String foodName) {
         try {
+            System.out.println("DEBUG: NotificationDAO - Creating notification for donor: " + donorId);
             Class.forName(dclass);
             try (Connection con = DriverManager.getConnection(url, username, password);
                  PreparedStatement ps = con.prepareStatement(
                     "INSERT INTO notifications (ngo_id, donor_id, food_listing_id, message, type, is_read, created_at) VALUES (?, ?, ?, ?, 'food_request', 0, NOW())")) {
                 String message = ngoName + " has requested your food: " + foodName;
+                System.out.println("DEBUG: Notification message: " + message);
                 ps.setInt(1, donorId); // Store donor as ngo_id for donor notifications
                 ps.setInt(2, ngoId);
                 ps.setInt(3, foodListingId);
                 ps.setString(4, message);
-                return ps.executeUpdate() > 0;
+                int result = ps.executeUpdate();
+                System.out.println("DEBUG: Notification insert result: " + result);
+                return result > 0;
             }
         } catch (ClassNotFoundException | SQLException e) {
+            System.out.println("DEBUG: Error creating notification: " + e.getMessage());
             e.printStackTrace();
         }
         return false;

@@ -6,7 +6,6 @@
 <%@ page import="java.sql.*" %>
 
 <%
-// Check if user is logged in and is a donor
 String userType = (String) session.getAttribute("userType");
 String userId = (String) session.getAttribute("userId");
 
@@ -15,7 +14,6 @@ if (userType == null || !"donor".equals(userType) || userId == null) {
     return;
 }
 
-// Get request ID
 String requestIdStr = request.getParameter("requestId");
 if (requestIdStr == null) {
     response.sendRedirect("donorDashboard.jsp?error=invalid_request");
@@ -30,7 +28,6 @@ if (foodRequest == null) {
     return;
 }
 
-// Get NGO details
 String ngoName = "";
 String ngoPhone = "";
 String ngoEmail = "";
@@ -67,7 +64,6 @@ try {
     e.printStackTrace();
 }
 
-// Get food listing details
 FoodListingBean foodListing = FoodListingDAO.getFoodListingById(foodRequest.getFoodListingId());
 %>
 
@@ -84,13 +80,11 @@ FoodListingBean foodListing = FoodListingDAO.getFoodListingById(foodRequest.getF
             min-height: 100vh;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
         .main-container {
             max-width: 1000px;
             margin: 2rem auto;
             padding: 0 1rem;
         }
-        
         .request-card {
             background: rgba(255, 255, 255, 0.95);
             border-radius: 20px;
@@ -98,14 +92,12 @@ FoodListingBean foodListing = FoodListingDAO.getFoodListingById(foodRequest.getF
             overflow: hidden;
             margin-bottom: 2rem;
         }
-        
         .card-header {
             background: linear-gradient(135deg, #007bff, #6610f2);
             color: white;
             padding: 2rem;
             text-align: center;
         }
-        
         .status-badge {
             padding: 0.5rem 1rem;
             border-radius: 20px;
@@ -113,39 +105,32 @@ FoodListingBean foodListing = FoodListingDAO.getFoodListingById(foodRequest.getF
             text-transform: uppercase;
             font-size: 0.8rem;
         }
-        
         .status-pending { background: #ffc107; color: #000; }
         .status-approved { background: #28a745; color: white; }
         .status-rejected { background: #dc3545; color: white; }
-        
         .info-section {
             padding: 2rem;
         }
-        
         .info-row {
             display: flex;
             margin-bottom: 1rem;
             padding: 0.5rem 0;
             border-bottom: 1px solid #eee;
         }
-        
         .info-label {
             font-weight: 600;
             color: #495057;
             min-width: 150px;
         }
-        
         .info-value {
             color: #6c757d;
             flex: 1;
         }
-        
         .action-buttons {
             padding: 2rem;
             background: #f8f9fa;
             text-align: center;
         }
-        
         .btn-accept {
             background: linear-gradient(135deg, #28a745, #20c997);
             border: none;
@@ -155,7 +140,6 @@ FoodListingBean foodListing = FoodListingDAO.getFoodListingById(foodRequest.getF
             margin: 0 0.5rem;
             transition: all 0.3s ease;
         }
-        
         .btn-reject {
             background: linear-gradient(135deg, #dc3545, #c82333);
             border: none;
@@ -165,7 +149,6 @@ FoodListingBean foodListing = FoodListingDAO.getFoodListingById(foodRequest.getF
             margin: 0 0.5rem;
             transition: all 0.3s ease;
         }
-        
         .btn-accept:hover, .btn-reject:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
@@ -191,8 +174,8 @@ FoodListingBean foodListing = FoodListingDAO.getFoodListingById(foodRequest.getF
                         <div class="info-value"><%= foodListing.getFoodName() %></div>
                     </div>
                     <div class="info-row">
-                        <div class="info-label">Quantity:</div>
-                        <div class="info-value"><%= foodListing.getQuantity() %> <%= foodListing.getQuantityUnit() %></div>
+                        <div class="info-label">Available Quantity:</div>
+                        <div class="info-value"><%= String.format("%.1f", foodListing.getQuantity()) %> <%= foodListing.getQuantityUnit() %></div>
                     </div>
                     <div class="info-row">
                         <div class="info-label">Food Type:</div>
@@ -238,6 +221,10 @@ FoodListingBean foodListing = FoodListingDAO.getFoodListingById(foodRequest.getF
             <div class="info-section">
                 <h4><i class="fas fa-calendar me-2 text-info"></i>Request Details</h4>
                 <div class="info-row">
+                    <div class="info-label">Requested Quantity:</div>
+                    <div class="info-value"><%= String.format("%.1f", foodRequest.getRequestedQuantity()) %> <%= foodListing != null ? foodListing.getQuantityUnit() : "units" %></div>
+                </div>
+                <div class="info-row">
                     <div class="info-label">Pickup Date:</div>
                     <div class="info-value"><%= foodRequest.getPickupDate() %></div>
                 </div>
@@ -261,136 +248,50 @@ FoodListingBean foodListing = FoodListingDAO.getFoodListingById(foodRequest.getF
             
             <% if ("pending".equals(foodRequest.getStatus())) { %>
             <div class="action-buttons">
-                <button class="btn btn-accept" onclick="updateRequestStatus(<%= foodRequest.getId() %>, 'approved')">
-                    <i class="fas fa-check me-2"></i>Accept Request
+                <button class="btn-accept" onclick="updateRequestStatus(<%= foodRequest.getId() %>, 'approved')">
+                    <i class="fas fa-check me-2"></i>Approve Request
                 </button>
-                <button class="btn btn-reject" onclick="updateRequestStatus(<%= foodRequest.getId() %>, 'rejected')">
+                <button class="btn-reject" onclick="updateRequestStatus(<%= foodRequest.getId() %>, 'rejected')">
                     <i class="fas fa-times me-2"></i>Reject Request
                 </button>
             </div>
             <% } else if ("approved".equals(foodRequest.getStatus())) { %>
             <div class="action-buttons">
-                <button class="btn btn-accept" onclick="updateRequestStatus(<%= foodRequest.getId() %>, 'completed')">
+                <button class="btn-accept" onclick="updateRequestStatus(<%= foodRequest.getId() %>, 'completed')">
                     <i class="fas fa-check-double me-2"></i>Mark as Completed
                 </button>
             </div>
             <% } %>
-            
-            <div class="action-buttons">
-                <a href="ngoRequests.jsp" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left me-2"></i>Back to Requests
-                </a>
-            </div>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        function updateRequestStatus(requestId, newStatus) {
-            let confirmMessage = '';
-            switch(newStatus) {
-                case 'approved':
-                    confirmMessage = 'Are you sure you want to accept this request? The NGO will be notified.';
-                    break;
-                case 'rejected':
-                    confirmMessage = 'Are you sure you want to reject this request? The NGO will be notified.';
-                    break;
-                case 'completed':
-                    confirmMessage = 'Are you sure you want to mark this request as completed?';
-                    break;
-            }
-            
-            if (confirm(confirmMessage)) {
-                const formData = new FormData();
-                formData.append('requestId', requestId);
-                formData.append('status', newStatus);
-                
-                fetch('updateRequestStatus.jsp', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.text())
-                .then(data => {
-                    if (data.includes('SUCCESS')) {
-                        alert('Request status updated successfully!');
-                        window.location.href = 'ngoRequests.jsp';
-                    } else {
-                        alert('Error updating request status: ' + data);
-                    }
-                })
-                .catch(error => {
-                    alert('Error updating request status. Please try again.');
-                });
-            }
-        }
-    </script>
-</body>
-</html>
-                    <div class="info-label">Pickup Time:</div>
-                    <div class="info-value"><%= foodRequest.getPickupTime().isEmpty() ? "Not specified" : foodRequest.getPickupTime() %></div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Request Date:</div>
-                    <div class="info-value"><%= foodRequest.getCreatedAt() %></div>
-                </div>
-                <% if (foodRequest.getRequestMessage() != null && !foodRequest.getRequestMessage().isEmpty()) { %>
-                <div class="info-row">
-                    <div class="info-label">Message:</div>
-                    <div class="info-value"><%= foodRequest.getRequestMessage() %></div>
-                </div>
-                <% } %>
-            </div>
-            
-            <% if ("pending".equals(foodRequest.getStatus())) { %>
-            <div class="action-buttons">
-                <h5 class="mb-3">Take Action</h5>
-                <button class="btn btn-accept" onclick="updateRequestStatus(<%= foodRequest.getId() %>, 'approved')">
-                    <i class="fas fa-check me-2"></i>Accept Request
-                </button>
-                <button class="btn btn-reject" onclick="updateRequestStatus(<%= foodRequest.getId() %>, 'rejected')">
-                    <i class="fas fa-times me-2"></i>Reject Request
-                </button>
-            </div>
-            <% } else { %>
-            <div class="action-buttons">
-                <div class="alert alert-info">
-                    <i class="fas fa-info-circle me-2"></i>
-                    This request has already been <%= foodRequest.getStatus() %>.
-                </div>
-            </div>
-            <% } %>
         </div>
         
-        <div class="text-center">
+        <div class="text-center mt-3">
             <a href="donorDashboard.jsp" class="btn btn-secondary">
                 <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
             </a>
         </div>
     </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
     <script>
-        function updateRequestStatus(requestId, status) {
-            if (confirm('Are you sure you want to ' + status + ' this request?')) {
+        function updateRequestStatus(requestId, newStatus) {
+            if (confirm('Are you sure you want to ' + newStatus + ' this request?')) {
                 fetch('updateRequestStatus.jsp', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                     },
-                    body: 'requestId=' + requestId + '&status=' + status
+                    body: 'requestId=' + requestId + '&status=' + newStatus
                 })
                 .then(response => response.text())
                 .then(data => {
-                    if (data.includes('success')) {
-                        alert('Request ' + status + ' successfully!');
-                        window.location.reload();
+                    if (data.includes('SUCCESS')) {
+                        alert('Request ' + newStatus + ' successfully!');
+                        window.location.href = 'donorDashboard.jsp';
                     } else {
-                        alert('Error updating request status.');
+                        alert('Error: ' + data);
                     }
                 })
                 .catch(error => {
-                    console.error('Error:', error);
-                    alert('Error updating request status.');
+                    alert('Error updating request status');
                 });
             }
         }

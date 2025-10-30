@@ -759,7 +759,7 @@ int unreadCount = NotificationDAO.getUnreadCount(ngoId);
                                             </div>
                                             <div class="col-md-4">
                                                 <small class="text-muted">
-                                                    <i class="fas fa-weight me-1"></i><%= food.getQuantity() %> <%= food.getQuantityUnit() %>
+                                                    <i class="fas fa-weight me-1"></i><%= String.format("%.1f", food.getQuantity()) %> <%= food.getQuantityUnit() %>
                                                 </small>
                                             </div>
                                         </div>
@@ -804,7 +804,7 @@ int unreadCount = NotificationDAO.getUnreadCount(ngoId);
                                     <tr>
                                         <td><%= food.getFoodName() %></td>
                                         <td><%= food.getFoodType() %></td>
-                                        <td><%= food.getQuantity() %> <%= food.getQuantityUnit() %></td>
+                                        <td><%= String.format("%.1f", food.getQuantity()) %> <%= food.getQuantityUnit() %></td>
                                         <td><%= food.getExpiryDate() %></td>
                                         <td><%= food.getPickupAddress() %>, <%= food.getPickupCity() %>, <%= food.getPickupState() %>, <%= food.getPickupZipCode() %></td>
                                         <td><%= food.getDescription() %></td>
@@ -875,7 +875,7 @@ int unreadCount = NotificationDAO.getUnreadCount(ngoId);
                                                 </div>
                                                 <div class="col-md-4">
                                                     <small class="text-muted">
-                                                        <i class="fas fa-weight me-1"></i><%= food.getQuantity() %> <%= food.getQuantityUnit() %>
+                                                        <i class="fas fa-weight me-1"></i><%= String.format("%.1f", food.getQuantity()) %> <%= food.getQuantityUnit() %>
                                                     </small>
                                                 </div>
                                             </div>
@@ -984,6 +984,11 @@ int unreadCount = NotificationDAO.getUnreadCount(ngoId);
                         <div class="mb-3">
                             <label for="pickupTime" class="form-label">Pickup Time</label>
                             <input type="time" class="form-control" id="pickupTime" name="pickupTime">
+                        </div>
+                        <div class="mb-3">
+                            <label for="requestedQuantity" class="form-label">Requested Quantity *</label>
+                            <input type="number" class="form-control" id="requestedQuantity" name="requestedQuantity" min="1" step="0.1" required>
+                            <div class="invalid-feedback">Please specify the quantity you need.</div>
                         </div>
                         <div class="mb-3">
                             <label for="requestMessage" class="form-label">Request Message</label>

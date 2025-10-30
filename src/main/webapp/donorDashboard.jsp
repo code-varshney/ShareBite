@@ -31,6 +31,8 @@ UserBean donorProfile = UserDAO.getUserById(donorId);
 List<NotificationBean> notifications = NotificationDAO.getNotificationsByNGO(donorId);
 int unreadCount = NotificationDAO.getUnreadCount(donorId);
 
+System.out.println("DEBUG: Donor ID: " + donorId + ", Notifications count: " + (notifications != null ? notifications.size() : 0) + ", Unread count: " + unreadCount);
+
 int activeListings = myListings != null ? myListings.size() : 0;
 int totalRequests = myRequests != null ? myRequests.size() : 0;
 %>
@@ -748,7 +750,7 @@ int totalRequests = myRequests != null ? myRequests.size() : 0;
                                                 </div>
                                                 <div class="col-md-6">
                                                     <small class="text-muted">
-                                                        <i class="fas fa-weight me-1"></i><%= food.getQuantity() %> <%= food.getQuantityUnit() %>
+                                                        <i class="fas fa-weight me-1"></i><%= String.format("%.1f", food.getQuantity()) %> <%= food.getQuantityUnit() %>
                                                     </small>
                                                 </div>
                                             </div>
@@ -946,7 +948,7 @@ int totalRequests = myRequests != null ? myRequests.size() : 0;
                                             </div>
                                         </td>
                                         <td>
-                                            <strong><%= food.getQuantity() %></strong><br>
+                                            <strong><%= String.format("%.1f", food.getQuantity()) %></strong><br>
                                             <small class="text-muted"><%= food.getQuantityUnit() %></small>
                                         </td>
                                         <td>
