@@ -1,15 +1,13 @@
-# Use official Tomcat with JDK 17
-FROM tomcat:10.1-jdk17
+# Use official Tomcat 9 with JDK 11 (stable for JSP apps)
+FROM tomcat:9.0-jdk11
 
-# Remove Tomcat default ROOT webapp so we use our app as ROOT
-RUN rm -rf /usr/local/tomcat/webapps/ROOT
+# Remove default webapps to keep container clean
+RUN rm -rf /usr/local/tomcat/webapps/*
 
-# Copy the entire webapp (current directory) to Tomcat's ROOT webapp folder
-COPY . /usr/local/tomcat/webapps/ROOT/
+# Copy your app as ROOT.war so it's served at /
+COPY ROOT.war /usr/local/tomcat/webapps/ROOT.war
 
-# If you use JDBC drivers (MySQL), include them in WEB-INF/lib
-# e.g., add mysql-connector-java.jar to WEB-INF/lib before building the image
-
+# Expose Tomcat port
 EXPOSE 8080
 
 # Start Tomcat
