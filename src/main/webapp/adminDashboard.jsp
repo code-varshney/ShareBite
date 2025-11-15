@@ -573,11 +573,15 @@ if (allUsers != null) {
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            alert('NGO verification status updated to: ' + status);
+                            alert(data.message || 'NGO verification status updated to: ' + status);
                             location.reload();
                         } else {
-                            alert('Failed to update NGO verification status.');
+                            alert('Error: ' + (data.message || 'Failed to update NGO verification status.'));
                         }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error updating verification status. Please try again.');
                     });
             }
         }
@@ -588,11 +592,15 @@ if (allUsers != null) {
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            alert('Request status updated to: ' + status);
+                            alert(data.message || 'Request status updated to: ' + status);
                             location.reload();
                         } else {
-                            alert('Failed to update request status.');
+                            alert('Error: ' + (data.message || 'Failed to update request status.'));
                         }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error updating request status. Please try again.');
                     });
             }
         }
@@ -605,11 +613,15 @@ if (allUsers != null) {
                         .then(response => response.json())
                         .then(data => {
                             if (data.success) {
-                                alert('All pending NGOs have been verified.');
+                                alert(data.message || 'All pending NGOs have been verified.');
                                 location.reload();
                             } else {
-                                alert('Failed to auto-verify NGOs.');
+                                alert('Error: ' + (data.message || 'Failed to auto-verify NGOs.'));
                             }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            alert('Error auto-verifying NGOs. Please try again.');
                         });
                 }
             }

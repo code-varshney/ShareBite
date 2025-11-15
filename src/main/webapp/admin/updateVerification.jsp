@@ -299,22 +299,23 @@ int totalPendingUsers = pendingUsers.size();
     <script>
         function updateVerification(userId, status) {
             if (confirm(`Are you sure you want to ${status} this user?`)) {
-                fetch('admin/updateVerification.jsp', {
+                fetch('../processVerification.jsp', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: `userId=${userId}&status=${status}`
                 })
-                .then(response => response.text())
+                .then(response => response.json())
                 .then(data => {
-                    if (data.includes('SUCCESS')) {
-                        alert(`User ${status} successfully!`);
+                    if (data.success) {
+                        alert(data.message);
                         location.reload();
                     } else {
-                        alert('Error updating verification status');
+                        alert('Error: ' + data.message);
                     }
                 })
                 .catch(error => {
-                    alert('Error updating verification status');
+                    console.error('Error:', error);
+                    alert('Error updating verification status. Please try again.');
                 });
             }
         }
