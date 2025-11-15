@@ -47,6 +47,18 @@ if (foodName == null || foodName.trim().isEmpty() ||
     return;
 }
 
+// Validate quantity is a valid number
+try {
+    double quantityValue = Double.parseDouble(quantity.trim());
+    if (quantityValue <= 0) {
+        response.sendRedirect("addFoodListing.jsp?error=invalid_quantity");
+        return;
+    }
+} catch (NumberFormatException e) {
+    response.sendRedirect("addFoodListing.jsp?error=invalid_quantity");
+    return;
+}
+
 // Validate expiry date
 try {
     java.time.LocalDate expiry = java.time.LocalDate.parse(expiryDate);
@@ -65,7 +77,7 @@ FoodListingBean foodListing = new FoodListingBean();
 foodListing.setDonorId(Integer.parseInt(userId));
 foodListing.setFoodName(foodName.trim());
 foodListing.setDescription(description != null ? description.trim() : "");
-foodListing.setQuantity(Integer.parseInt(quantity));
+foodListing.setQuantity(Double.parseDouble(quantity));
 foodListing.setQuantityUnit(quantityUnit.trim());
 foodListing.setFoodType(foodType.trim());
 foodListing.setExpiryDate(expiryDate.trim());

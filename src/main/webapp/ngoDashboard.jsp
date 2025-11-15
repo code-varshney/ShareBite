@@ -67,8 +67,9 @@ int unreadCount = NotificationDAO.getUnreadCount(ngoId);
     <title>NGO Dashboard - Sharebite</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/sharebite-theme.css">
     <link rel="stylesheet" href="css/welcomePopup.css">
     <style>
         * {
@@ -79,7 +80,7 @@ int unreadCount = NotificationDAO.getUnreadCount(ngoId);
         
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(-45deg, #e3f2fd, #f0f8ff, #e1f5fe, #f3e5f5);
+            background: var(--gradient-ngo);
             background-size: 400% 400%;
             animation: gradientShift 15s ease infinite;
             min-height: 100vh;
@@ -93,9 +94,15 @@ int unreadCount = NotificationDAO.getUnreadCount(ngoId);
         
         .navbar {
             background: linear-gradient(135deg, #007bff 0%, #6610f2 100%);
-            box-shadow: 0 4px 20px rgba(0, 123, 255, 0.3);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .navbar-nav .nav-link {
+            color: white !important;
+        }
+        
+        .navbar-text {
+            color: white !important;
         }
         
         .navbar-brand {

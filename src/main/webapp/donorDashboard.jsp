@@ -43,8 +43,9 @@ int totalRequests = myRequests != null ? myRequests.size() : 0;
     <title>Donor Dashboard - Sharebite</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="css/sharebite-theme.css">
     <link rel="stylesheet" href="css/welcomePopup.css">
     <style>
         * {
@@ -55,7 +56,7 @@ int totalRequests = myRequests != null ? myRequests.size() : 0;
         
         body {
             font-family: 'Poppins', sans-serif;
-            background: linear-gradient(-45deg, #e8f5e8, #f0f8f0, #e6f7e6, #f5fbf5);
+            background: var(--gradient-donor);
             background-size: 400% 400%;
             animation: gradientShift 15s ease infinite;
             min-height: 100vh;
@@ -69,9 +70,15 @@ int totalRequests = myRequests != null ? myRequests.size() : 0;
         
         .navbar {
             background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-            box-shadow: 0 4px 20px rgba(40, 167, 69, 0.3);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .navbar-nav .nav-link {
+            color: white !important;
+        }
+        
+        .navbar-text {
+            color: white !important;
         }
         
         .navbar-brand {
