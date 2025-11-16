@@ -17,6 +17,7 @@ public class FoodRequestBean {
     private String ngoName;
     private String foodName;
     private double requestedQuantity;
+    private int donorId;
 
     // Default constructor
     public FoodRequestBean() {}
@@ -144,5 +145,13 @@ public class FoodRequestBean {
 
     public void setRequestedQuantity(double requestedQuantity) {
         this.requestedQuantity = requestedQuantity;
+    }
+
+    public int getDonorId() {
+        return donorId;
+    }
+
+    public void setDonorId(int donorId) {
+        this.donorId = donorId;
     }
 }

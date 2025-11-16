@@ -60,7 +60,7 @@ public class FoodRequestDAO {
             Class.forName(dclass);
             con = DriverManager.getConnection(url, username, password);
             
-            String sql = "SELECT fr.*, fl.foodName, fl.quantity, fl.quantityUnit, fl.expiryDate, u.name as donorName FROM food_requests fr JOIN food_listings fl ON fr.foodListingId = fl.id JOIN users u ON fl.donorId = u.id WHERE fr.ngoId=? AND fr.isActive=1 ORDER BY fr.createdAt DESC";
+            String sql = "SELECT fr.*, fl.foodName, fl.quantity, fl.quantityUnit, fl.expiryDate, fl.donorId, u.name as donorName FROM food_requests fr JOIN food_listings fl ON fr.foodListingId = fl.id JOIN users u ON fl.donorId = u.id WHERE fr.ngoId=? AND fr.isActive=1 ORDER BY fr.createdAt DESC";
             ps = con.prepareStatement(sql);
             ps.setInt(1, ngoId);
             rs = ps.executeQuery();
@@ -78,6 +78,7 @@ public class FoodRequestDAO {
                 request.setCreatedAt(rs.getTimestamp("createdAt"));
                 request.setUpdatedAt(rs.getTimestamp("updatedAt"));
                 request.setActive(rs.getBoolean("isActive"));
+                request.setDonorId(rs.getInt("donorId"));
                 requests.add(request);
             }
             

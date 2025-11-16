@@ -177,6 +177,12 @@ List<FoodRequestBean> myRequests = FoodRequestDAO.getFoodRequestsForDonor(donorI
                                         <i class="fas fa-eye me-1"></i>View Details
                                     </a>
                                     
+                                    <% if ("approved".equals(ngoRequest.getStatus()) || "completed".equals(ngoRequest.getStatus())) { %>
+                                        <a href="viewNGODetails.jsp?ngoId=<%= ngoRequest.getNgoId() %>" class="btn btn-outline-info btn-action">
+                                            <i class="fas fa-info-circle me-1"></i>NGO Details
+                                        </a>
+                                    <% } %>
+                                    
                                     <% if ("pending".equals(ngoRequest.getStatus())) { %>
                                         <button class="btn btn-accept btn-action" onclick="updateRequestStatus(<%= ngoRequest.getId() %>, 'approved')">
                                             <i class="fas fa-check me-1"></i>Accept
