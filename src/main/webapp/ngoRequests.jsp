@@ -181,6 +181,9 @@ List<FoodRequestBean> myRequests = FoodRequestDAO.getFoodRequestsForDonor(donorI
                                         <a href="viewNGODetails.jsp?ngoId=<%= ngoRequest.getNgoId() %>" class="btn btn-outline-info btn-action">
                                             <i class="fas fa-info-circle me-1"></i>NGO Details
                                         </a>
+                                        <a href="chat.jsp?requestId=<%= ngoRequest.getId() %>" class="btn btn-outline-success btn-action">
+                                            <i class="fas fa-comments me-1"></i>Chat
+                                        </a>
                                     <% } %>
                                     
                                     <% if ("pending".equals(ngoRequest.getStatus())) { %>

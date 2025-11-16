@@ -937,6 +937,9 @@ int unreadCount = NotificationDAO.getUnreadCount(ngoId);
                                             <a href="viewDonorDetails.jsp?donorId=<%= request1.getDonorId() %>" class="btn btn-outline-info btn-sm mb-2">
                                                 <i class="fas fa-info-circle me-1"></i>Donor Details
                                             </a>
+                                            <a href="chat.jsp?requestId=<%= request1.getId() %>" class="btn btn-outline-success btn-sm mb-2">
+                                                <i class="fas fa-comments me-1"></i>Chat
+                                            </a>
                                         <% } %>
                                         <% if ("pending".equals(request1.getStatus())) { %>
                                             <button class="btn btn-warning btn-sm me-2">

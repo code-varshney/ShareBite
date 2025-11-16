@@ -159,7 +159,7 @@ public class FoodRequestDAO {
             Class.forName(dclass);
             con = DriverManager.getConnection(url, username, password);
             
-            String sql = "SELECT fr.*, fl.foodName, fl.quantity, fl.quantityUnit, fl.expiryDate, fl.pickupAddress, fl.pickupCity, u.name as ngoName, u.organizationName, u.phone as ngoPhone FROM food_requests fr JOIN food_listings fl ON fr.foodListingId = fl.id JOIN users u ON fr.ngoId = u.id WHERE fr.id=? AND fr.isActive=1";
+            String sql = "SELECT fr.*, fl.foodName, fl.quantity, fl.quantityUnit, fl.expiryDate, fl.pickupAddress, fl.pickupCity, fl.donorId, u.name as ngoName, u.organizationName, u.phone as ngoPhone FROM food_requests fr JOIN food_listings fl ON fr.foodListingId = fl.id JOIN users u ON fr.ngoId = u.id WHERE fr.id=? AND fr.isActive=1";
             ps = con.prepareStatement(sql);
             ps.setInt(1, requestId);
             rs = ps.executeQuery();
@@ -178,6 +178,7 @@ public class FoodRequestDAO {
                 request.setCreatedAt(rs.getTimestamp("createdAt"));
                 request.setUpdatedAt(rs.getTimestamp("updatedAt"));
                 request.setActive(rs.getBoolean("isActive"));
+                request.setDonorId(rs.getInt("donorId"));
             }
             
         } catch (ClassNotFoundException | SQLException e) {
